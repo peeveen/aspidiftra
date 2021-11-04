@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Aspidiftra</AssemblyName>
+    <RootNamespace>Aspidiftra</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspose.PDF" Version="20.12.0" />
+  </ItemGroup>
+
+</Project>
