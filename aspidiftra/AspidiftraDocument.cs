@@ -4,16 +4,16 @@ using System.Collections.Immutable;
 using System.Linq;
 using Aspose.Pdf;
 using Aspose.Pdf.Facades;
+using Rectangle = Aspidiftra.Geometry.Rectangle;
 using Stamp = Aspose.Pdf.Facades.Stamp;
 
 namespace Aspidiftra
 {
 	public class AspidiftraDocument : IDisposable
 	{
-		private static readonly RectangleComparer RectComparer = new RectangleComparer();
 		private readonly PdfFileStamp _fileStamp;
 		private readonly IImmutableSet<int> _pageNumbers;
-		private readonly IImmutableDictionary<Rectangle, ImmutableList<int>> _pagesBySize;
+		private readonly IImmutableDictionary<PageSize, ImmutableList<int>> _pagesBySize;
 
 		public AspidiftraDocument(string path, string password = null)
 		{
@@ -31,7 +31,7 @@ namespace Aspidiftra
 			// its positions for each unique page size, then apply those positions to all the
 			// pages that share that size.
 			_pagesBySize = document.Pages
-				.GroupBy(GetNormalizedPageSize, page => page.Number, RectComparer)
+				.GroupBy(GetNormalizedPageSize, page => page.Number)
 				.ToImmutableDictionary(grouping => grouping.Key, grouping => grouping.ToImmutableList());
 			// Wrap the document in a PdfFileStamp object, for watermarking.
 			// 'Cos that's why we're here, right?
@@ -44,12 +44,14 @@ namespace Aspidiftra
 			_fileStamp?.Dispose();
 		}
 
-		private static Rectangle GetNormalizedPageSize(Page page)
+		private static PageSize GetNormalizedPageSize(Page page)
 		{
 			// All pages have a MediaBox that defines the page size.
 			// There is also the CropBox that defines how much of that page is visible.
 			// In most cases, CropBox will be the same as MediaBox ... but not always.
-			return page.MediaBox.Intersect(page.CropBox).Normalize(page.Rotate);
+			var pageSize = new Rectangle(page.MediaBox.Intersect(page.CropBox));
+			var flip = page.Rotate == Rotation.on90 || page.Rotate == Rotation.on270;
+			return new PageSize(flip ? pageSize.Height : pageSize.Width, flip ? pageSize.Width : pageSize.Height);
 		}
 
 		public void Save(string path)
@@ -89,26 +91,6 @@ namespace Aspidiftra
 				stamp.BindLogo(formattedText);
 				stamp.SetOrigin((float) watermarkElement.Position.X, (float) watermarkElement.Position.Y);
 				fileStamp.AddStamp(stamp);
-			}
-		}
-
-		/// <summary>
-		///   The Aspose Rectangle class does not calculate the hashcode from the
-		///   rectangle size, and since we want to use it in a Dictionary, we'd
-		///   better rectify that. No pun intended.
-		/// </summary>
-		private class RectangleComparer : IEqualityComparer<Rectangle>
-		{
-			public bool Equals(Rectangle x, Rectangle y)
-			{
-				if (x == y) return true;
-				if (x == null || y == null) return false;
-				return x.Equals(y);
-			}
-
-			public int GetHashCode(Rectangle obj)
-			{
-				return HashCode.Combine(obj.LLX, obj.LLY, obj.URX, obj.URY);
 			}
 		}
 	}

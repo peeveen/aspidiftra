@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\aspidiftra\aspidiftra.csproj" />
+    <ProjectReference Include="..\aspidiftra\Aspidiftra.csproj" />
   </ItemGroup>
 
   <ItemGroup>

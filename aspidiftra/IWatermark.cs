@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using Aspose.Pdf;
 
 namespace Aspidiftra
 {
@@ -7,6 +6,6 @@ namespace Aspidiftra
 	{
 		float Opacity { get; }
 		IImmutableSet<int> GetApplicablePageNumbers(IImmutableSet<int> availablePageNumbers);
-		WatermarkElementCollection GetWatermarkElements(Rectangle pageMediaBox);
+		WatermarkElementCollection GetWatermarkElements(PageSize pageMediaBox);
 	}
 }

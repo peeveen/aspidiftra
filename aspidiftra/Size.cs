@@ -1,6 +1,4 @@
-﻿using Aspose.Pdf;
-
-namespace Aspidiftra
+﻿namespace Aspidiftra
 {
 	public class Size
 	{
@@ -17,7 +15,7 @@ namespace Aspidiftra
 		{
 		}
 
-		public float GetEffectiveSize(Rectangle pageSize)
+		public float GetEffectiveSize(PageSize pageSize)
 		{
 			return (float) (_size * _sizing.GetSizingFactor(pageSize));
 		}

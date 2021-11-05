@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Aspidiftra
+namespace Aspidiftra.Geometry
 {
 	/// <summary>
 	///   Angle units.
@@ -79,17 +79,17 @@ namespace Aspidiftra
 		{
 			// These prevent any unnecessary floating point precision errors appearing
 			// when you are working exclusively with orthogonal angles.
-			if (this == Radians0 || this == RadiansPi)
+			if (ReferenceEquals(this, Radians0) || ReferenceEquals(this, RadiansPi))
 				return this;
-			if (this == RadiansHalfPi)
+			if (ReferenceEquals(this, RadiansHalfPi))
 				return RadiansOneAndAHalfPi;
-			if (this == RadiansOneAndAHalfPi)
+			if (ReferenceEquals(this, RadiansOneAndAHalfPi))
 				return RadiansHalfPi;
-			if (this == Degrees0 || this == Degrees180)
+			if (ReferenceEquals(this, Degrees0) || ReferenceEquals(this, Degrees180))
 				return this;
-			if (this == Degrees90)
+			if (ReferenceEquals(this, Degrees90))
 				return Degrees270;
-			if (this == Degrees270)
+			if (ReferenceEquals(this, Degrees270))
 				return Degrees90;
 			return new Angle(Normalize(-Value), Units);
 		}
@@ -102,17 +102,17 @@ namespace Aspidiftra
 		{
 			// These prevent any unnecessary floating point precision errors appearing
 			// when you are working exclusively with orthogonal angles.
-			if (this == RadiansHalfPi || this == RadiansOneAndAHalfPi)
+			if (ReferenceEquals(this, RadiansHalfPi) || ReferenceEquals(this, RadiansOneAndAHalfPi))
 				return this;
-			if (this == Radians0)
+			if (ReferenceEquals(this, Radians0))
 				return RadiansPi;
-			if (this == RadiansPi)
+			if (ReferenceEquals(this, RadiansPi))
 				return Radians0;
-			if (this == Degrees90 || this == Degrees270)
+			if (ReferenceEquals(this, Degrees90) || ReferenceEquals(this, Degrees270))
 				return this;
-			if (this == Degrees0)
+			if (ReferenceEquals(this, Degrees0))
 				return Degrees180;
-			if (this == Degrees180)
+			if (ReferenceEquals(this, Degrees180))
 				return Degrees0;
 			return new Angle(Normalize(_halfCircle - Value), Units);
 		}
@@ -125,21 +125,21 @@ namespace Aspidiftra
 		{
 			// These prevent any unnecessary floating point precision errors appearing
 			// when you are working exclusively with orthogonal angles.
-			if (this == Radians0)
+			if (ReferenceEquals(this, Radians0))
 				return RadiansPi;
-			if (this == RadiansHalfPi)
+			if (ReferenceEquals(this, RadiansHalfPi))
 				return RadiansOneAndAHalfPi;
-			if (this == RadiansPi)
+			if (ReferenceEquals(this, RadiansPi))
 				return Radians0;
-			if (this == RadiansOneAndAHalfPi)
+			if (ReferenceEquals(this, RadiansOneAndAHalfPi))
 				return RadiansHalfPi;
-			if (this == Degrees0)
+			if (ReferenceEquals(this, Degrees0))
 				return Degrees180;
-			if (this == Degrees90)
+			if (ReferenceEquals(this, Degrees90))
 				return Degrees270;
-			if (this == Degrees180)
+			if (ReferenceEquals(this, Degrees180))
 				return Degrees0;
-			if (this == Degrees270)
+			if (ReferenceEquals(this, Degrees270))
 				return Degrees90;
 			return new Angle(Normalize(Value + _halfCircle), Units);
 		}
@@ -154,13 +154,13 @@ namespace Aspidiftra
 			// when you are working exclusively with orthogonal angles.
 			if (Units == AngleUnits.Degrees)
 				return this;
-			if (this == Radians0)
+			if (ReferenceEquals(this, Radians0))
 				return Degrees0;
-			if (this == RadiansHalfPi)
+			if (ReferenceEquals(this, RadiansHalfPi))
 				return Degrees90;
-			if (this == RadiansPi)
+			if (ReferenceEquals(this, RadiansPi))
 				return Degrees180;
-			if (this == RadiansOneAndAHalfPi)
+			if (ReferenceEquals(this, RadiansOneAndAHalfPi))
 				return Degrees270;
 			return new Angle(Value / Math.PI * 180.0, AngleUnits.Degrees);
 		}
@@ -175,13 +175,13 @@ namespace Aspidiftra
 			// when you are working exclusively with orthogonal angles.
 			if (Units == AngleUnits.Radians)
 				return this;
-			if (this == Degrees0)
+			if (ReferenceEquals(this, Degrees0))
 				return Radians0;
-			if (this == Degrees90)
+			if (ReferenceEquals(this, Degrees90))
 				return RadiansHalfPi;
-			if (this == Degrees180)
+			if (ReferenceEquals(this, Degrees180))
 				return RadiansPi;
-			if (this == Degrees270)
+			if (ReferenceEquals(this, Degrees270))
 				return RadiansOneAndAHalfPi;
 			return Units == AngleUnits.Radians ? this : new Angle(Value / 180.0 * Math.PI, AngleUnits.Radians);
 		}
@@ -222,6 +222,46 @@ namespace Aspidiftra
 			if (a == b)
 				return true;
 			return a.ToDegrees().Value >= b.ToDegrees().Value;
+		}
+
+		public static bool operator ==(Angle a, Angle b)
+		{
+			if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+				return true;
+			if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+				return false;
+			if (ReferenceEquals(a, b))
+				return true;
+			if ((ReferenceEquals(a, Radians0) || ReferenceEquals(a, Degrees0)) &&
+			    (ReferenceEquals(b, Radians0) || ReferenceEquals(b, Degrees0)))
+				return true;
+			if ((ReferenceEquals(a, RadiansHalfPi) || ReferenceEquals(a, Degrees90)) &&
+			    (ReferenceEquals(b, RadiansHalfPi) || ReferenceEquals(b, Degrees90)))
+				return true;
+			if ((ReferenceEquals(a, RadiansPi) || ReferenceEquals(a, Degrees180)) &&
+			    (ReferenceEquals(b, RadiansPi) || ReferenceEquals(b, Degrees180)))
+				return true;
+			if ((ReferenceEquals(a, RadiansOneAndAHalfPi) || ReferenceEquals(a, Degrees270)) &&
+			    (ReferenceEquals(b, RadiansOneAndAHalfPi) || ReferenceEquals(b, Degrees270)))
+				return true;
+			return Math.Abs(a.ToDegrees().Value - b.ToDegrees().Value) <= AspidiftraUtil.GeometricTolerance;
+		}
+
+		public static bool operator !=(Angle a, Angle b)
+		{
+			return !(a == b);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is Angle angleObj)
+				return this == angleObj;
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Value, (int) Units);
 		}
 	}
 }

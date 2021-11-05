@@ -1,4 +1,4 @@
-﻿using Aspose.Pdf;
+﻿using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {

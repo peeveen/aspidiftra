@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Aspidiftra
@@ -10,8 +11,10 @@ namespace Aspidiftra
 		// or reducing the font size. The amount that we will increase or reduce by will always
 		// be a multiple of this value. It will also never be less than this value, otherwise
 		// we could spend an eternity making insanely small adjustments.
-		private const float FontSizeDelta = 0.5f;
-		private static readonly (double, double) NoOffset = (0.0, 0.0);
+		private const float MinimumFontSizeDelta = 0.5f;
+
+		// We will never use a font size any smaller than this.
+		private const float MinimumFontSize = 1.0f;
 
 		private readonly Fitting _fitting;
 		private readonly Font _font;
@@ -27,58 +30,150 @@ namespace Aspidiftra
 			_fitting = fitting;
 		}
 
-		private (double X, double Y) CalculateJustificationOffset(TextSlot slot, double textLength)
-		{
-			var leftJustifiedAlready = slot.Angle < Angle.RadiansPi;
-			var rightJustifiedAlready = slot.Angle >= Angle.RadiansPi;
-			var spareSlotSpace = slot.Width - textLength;
-			return _justification switch
-			{
-				Justification.Left when leftJustifiedAlready => NoOffset,
-				Justification.Right when rightJustifiedAlready => NoOffset,
-				Justification.Centre =>
-					(Math.Abs(spareSlotSpace / 2.0 * slot.Angle.Cos), Math.Abs(spareSlotSpace / 2.0 * slot.Angle.Sin)),
-				_ =>
-					// Due to the angle, text is appearing left or right justified by default,
-					// but we want it the opposite way.
-					(Math.Abs(spareSlotSpace * slot.Angle.Cos), Math.Abs(spareSlotSpace * slot.Angle.Sin))
-			};
-		}
-
 		internal PositionedTextCollection GetPositionedText(IEnumerable<string> text, float fontSize)
 		{
 			// We may need to break up these strings, so convert them to a mutable list.
-			var textList = text.ToList();
-			var fontSizeMeasurementsCache = new Dictionary<double, FontSizeMeasurements>();
+			var originalStrings = text.ToImmutableList();
+			var fontSizeMeasurementsCache = new FontSizeMeasurementsCache(_font, _textSlotCalculator);
+			var currentStrings = originalStrings;
 			for (;;)
+			{
+				var fontSizeMeasurements = fontSizeMeasurementsCache.GetMeasurements(fontSize);
+				IReadOnlyList<MeasuredString> measuredStrings =
+					fontSizeMeasurements.MeasureStrings(currentStrings).ToImmutableList();
+				var shrinkRequired = false;
 				try
 				{
-					if (!fontSizeMeasurementsCache.TryGetValue(fontSize, out var fontSizeMeasurements))
-					{
-						fontSizeMeasurements =
-							new FontSizeMeasurements(_font, fontSize, _textSlotCalculator.CalculateSlots(fontSize));
-						fontSizeMeasurementsCache.Add(fontSize, fontSizeMeasurements);
-					}
+					var slots = fontSizeMeasurements.TextSlotProvider.GetTextSlots(measuredStrings.Count);
 
-					var slots = fontSizeMeasurements.TextSlotProvider.GetTextSlots(textList.Count);
+					var assignedSlots =
+						measuredStrings.Zip(slots, (str, slot) => new AssignedTextSlot(str, slot, _justification))
+							.ToImmutableList();
+					var (splitStrings, newShrinkRequired) =
+						HandleExcessivelyLengthyStrings(assignedSlots, fontSizeMeasurements);
+					shrinkRequired |= newShrinkRequired;
 
-					// Don't really need the lambda here, but I prefer named properties over the First/Second syntax.
-					var assignedSlots = textList.Zip(slots, (str, slot) => (Text: str, Slot: slot));
+					// If we didn't split any strings, and no shrinking is required, then we can return what we have.
+					if (measuredStrings.Count == splitStrings.Count && !shrinkRequired)
+						return GetPositionedTextCollection(assignedSlots, fontSize);
 
-					var positionedText = assignedSlots.Select(assignedSlot =>
-					{
-						var textLength = fontSizeMeasurements.GetTextLength(assignedSlot.Text);
-						var justificationOffset =
-							CalculateJustificationOffset(assignedSlot.Slot, textLength);
-						var textOrigin = assignedSlot.Slot.EffectiveTextOrigin;
-						var justifiedTextOrigin = textOrigin.OffsetBy(justificationOffset.X, justificationOffset.Y);
-						return new PositionedText(assignedSlot.Text, justifiedTextOrigin);
-					});
-					return new PositionedTextCollection(positionedText, fontSize);
+					// Otherwise, let's go round again.
+					// If a font size reduction is required, then any split strings are no longer valid.
+					currentStrings = shrinkRequired ? originalStrings : splitStrings.Select(x => x.Text).ToImmutableList();
 				}
-				catch (InsufficientSpaceException insufficientSpaceException)
+				catch (InsufficientSlotsException)
 				{
+					// There are not enough slots for the text.
+					// Wrapping lines will only make this worse.
+					// If we're not allowed to shrink the font size, then we are out of options, so
+					// the exception will just have to bubble up.
+					if (!_fitting.HasShrink())
+						throw;
+					shrinkRequired = true;
+					// TODO: Make an estimate of shrink magnitude?
+					//var availableSlots = insufficientSlotsException.AvailableSlots;
+					//var requestedSlots = insufficientSlotsException.RequestedSlots;
 				}
+
+				if (shrinkRequired)
+					fontSize = ShrinkFontSize(fontSize, MinimumFontSizeDelta);
+			}
+		}
+
+		private static float ShrinkFontSize(float fontSize, float shrinkAmount)
+		{
+			if (Math.Abs(fontSize - MinimumFontSize) < float.Epsilon)
+				throw new CannotReduceFontSizeException(MinimumFontSize);
+			fontSize -= shrinkAmount;
+			if (fontSize < MinimumFontSize)
+				fontSize = MinimumFontSize;
+			return fontSize;
+		}
+
+		private PositionedTextCollection GetPositionedTextCollection(IEnumerable<AssignedTextSlot> assignedSlots,
+			float fontSize)
+		{
+			var positionedText = assignedSlots.Select(assignedSlot =>
+			{
+				var slotText = assignedSlot.Text;
+				var slot = assignedSlot.Slot;
+				var textOrigin = slot.EffectiveTextOrigin;
+				var justifiedTextOrigin = textOrigin + assignedSlot.JustificationOffset;
+				return new PositionedText(slotText.Text, justifiedTextOrigin);
+			});
+			return new PositionedTextCollection(positionedText, fontSize);
+		}
+
+		private (IImmutableList<MeasuredString> Text, bool ShrinkRequired) HandleExcessivelyLengthyStrings(
+			IEnumerable<AssignedTextSlot> assignedSlots, FontSizeMeasurements fontSizeMeasurements)
+		{
+			var shrinkRequired = false;
+			var handledStringSubCollections = assignedSlots.Select(assignedSlot =>
+			{
+				var slotText = assignedSlot.Text;
+				var slot = assignedSlot.Slot;
+				var measuredString = fontSizeMeasurements.MeasureString(slotText.Text);
+				if (measuredString.Length > slot.Width)
+				{
+					var (handledText, newShrinkRequired) =
+						HandleExcessivelyLengthyString(measuredString, fontSizeMeasurements, slot.Width);
+					shrinkRequired |= newShrinkRequired;
+					return handledText;
+				}
+
+				return new[] {measuredString};
+			});
+			var handledStrings = handledStringSubCollections.SelectMany(s => s).ToImmutableList();
+			return (handledStrings, shrinkRequired);
+		}
+
+		private (IEnumerable<MeasuredString> Text, bool ShrinkRequired) HandleExcessivelyLengthyString(
+			MeasuredString measuredString,
+			FontSizeMeasurements fontSizeMeasurements, double slotWidth)
+		{
+			var shrinkRequired = false;
+			if (_fitting.HasWrap() && measuredString.IsSplittable)
+				try
+				{
+					return (fontSizeMeasurements.SplitTextToFit(measuredString.Text, slotWidth), false);
+				}
+				catch (FontSizeMeasurements.CannotSplitTextException)
+				{
+					if (!_fitting.HasShrink())
+						throw;
+					shrinkRequired = true;
+				}
+			else if (_fitting.HasShrink())
+				shrinkRequired = true;
+
+			return (new[] {measuredString}, shrinkRequired);
+		}
+
+		internal class FontSizeMeasurementsCache
+		{
+			private readonly IDictionary<float, FontSizeMeasurements>
+				_cache = new Dictionary<float, FontSizeMeasurements>();
+
+			private readonly Font _font;
+			private readonly ITextSlotCalculator _textSlotCalculator;
+
+			internal FontSizeMeasurementsCache(Font font, ITextSlotCalculator textSlotCalculator)
+			{
+				_font = font;
+				_textSlotCalculator = textSlotCalculator;
+			}
+
+			internal FontSizeMeasurements GetMeasurements(float fontSize)
+			{
+				if (!_cache.TryGetValue(fontSize, out var fontSizeMeasurements))
+				{
+					fontSizeMeasurements =
+						new FontSizeMeasurements(_font, fontSize, _textSlotCalculator.CalculateSlots(fontSize));
+					_cache.Add(fontSize, fontSizeMeasurements);
+				}
+
+				return fontSizeMeasurements;
+			}
 		}
 	}
 }

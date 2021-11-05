@@ -37,4 +37,21 @@
 		/// </summary>
 		RelativeToLongestSide
 	}
+
+	public static class SizingExtensions
+	{
+		public static double GetSizingFactor(this Sizing sizing, PageSize pageSize)
+		{
+			return sizing switch
+			{
+				Sizing.RelativeToWidth => pageSize.Width,
+				Sizing.RelativeToHeight => pageSize.Height,
+				Sizing.RelativeToAverageSideLength => pageSize.AverageSideLength(),
+				Sizing.RelativeToDiagonalSize => pageSize.DiagonalLength(),
+				Sizing.RelativeToShortestSide => pageSize.ShortestSideLength(),
+				Sizing.RelativeToLongestSide => pageSize.LongestSideLength(),
+				_ => 1.0
+			};
+		}
+	}
 }

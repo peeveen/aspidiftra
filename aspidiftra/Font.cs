@@ -1,5 +1,4 @@
-﻿using Aspose.Pdf;
-using Aspose.Pdf.Text;
+﻿using Aspose.Pdf.Text;
 
 namespace Aspidiftra
 {
@@ -23,7 +22,7 @@ namespace Aspidiftra
 
 		public string Name => _font.FontName;
 
-		public float GetSize(Rectangle pageSize)
+		public float GetSize(PageSize pageSize)
 		{
 			return _size.GetEffectiveSize(pageSize);
 		}

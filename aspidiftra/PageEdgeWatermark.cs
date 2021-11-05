@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Aspose.Pdf;
+using Aspidiftra.Geometry;
 using Aspose.Pdf.Facades;
 
 namespace Aspidiftra
@@ -56,7 +56,7 @@ namespace Aspidiftra
 		public PageEdgeWatermark(string text, Appearance appearance, PageEdgePosition position,
 			Justification justification, Fitting fit, Size marginSize, bool reverseDirection = false,
 			Func<IImmutableSet<int>, IImmutableSet<int>> pageSelector = null
-			) : base(appearance.Opacity, pageSelector)
+		) : base(appearance.Opacity, pageSelector)
 		{
 			_text = AspidiftraUtil.SplitTextIntoLines(text);
 			_appearance = appearance;
@@ -69,12 +69,18 @@ namespace Aspidiftra
 			_fit = fit.Normalize(_text);
 		}
 
-		public override WatermarkElementCollection GetWatermarkElements(Rectangle pageSize)
+		public override WatermarkElementCollection GetWatermarkElements(PageSize pageSize)
 		{
 			// Get the initial requested font size. This may change,
 			// depending on the value of _fit.
 			var font = _appearance.Font;
 			var fontSize = font.GetSize(pageSize);
+
+			// Reduce page size length by the margin size. If the remaining space
+			// is zero or less, then throw an exception (thrown by the ApplyMargin
+			// function).
+			var effectiveMarginSize = _marginSize.GetEffectiveSize(pageSize);
+			var pageSizeWithoutMargin = pageSize.ApplyMargin(effectiveMarginSize);
 
 			// What angle will the text be at?
 			// It will be an orthogonal angle, i.e. multiple of 90 degrees.
@@ -84,17 +90,21 @@ namespace Aspidiftra
 
 			// This object will provide "text slots" (places to put strings) to the text position calculator.
 			var pageEdgeSlotCalculator =
-				new PageEdgeTextSlotCalculator(pageSize, _pageEdgePosition, _marginSize, angle, _reverseDirection);
+				new PageEdgeTextSlotCalculator(pageSizeWithoutMargin, _pageEdgePosition, angle, _reverseDirection);
 			// This object will do all the positioning of text, and also any fitting.
-			var textPositionCalculator = new TextPositionCalculator(pageEdgeSlotCalculator, _appearance.Font, _justification, _fit);
+			var textPositionCalculator =
+				new TextPositionCalculator(pageEdgeSlotCalculator, _appearance.Font, _justification, _fit);
 			// So let's get the results of the text positioning.
 			var positionedText =
 				textPositionCalculator.GetPositionedText(_text, fontSize);
 
 			// We can now convert those calculated text positions to watermark elements.
-			var elements = positionedText.Select(txt => new WatermarkElement(txt.Position, new FormattedText(txt.Text,
-				_appearance.Color,
-				_appearance.Font.Name, EncodingType.Winansi, false, positionedText.FontSize)));
+			// All calculated coordinates from the TextPositionCalculator will be for a page size
+			// without the margins. We need to reapply the margin offset here.
+			var elements = positionedText.Select(txt => new WatermarkElement(
+				txt.Position + (effectiveMarginSize, effectiveMarginSize),
+				new FormattedText(txt.Text, _appearance.Color, _appearance.Font.Name, EncodingType.Winansi,
+					false, positionedText.FontSize)));
 
 			return new WatermarkElementCollection(elements, angle, _appearance.IsBackground);
 		}
@@ -105,71 +115,31 @@ namespace Aspidiftra
 		private readonly Angle _angle;
 		private readonly double _availableTextStackSpace;
 		private readonly double _maximumTextLength;
-		private readonly Point _pageBottomLeft;
-		private readonly Point _pageBottomRight;
 		private readonly PageEdgePosition _pageEdgePosition;
-		private readonly Point _pageTopLeft;
-		private readonly Point _pageTopRight;
+		private readonly PageSize _pageSize;
 		private readonly bool _reverseDirection;
 		private readonly int _xStepMultiplier;
 		private readonly int _yStepMultiplier;
 
-		internal PageEdgeTextSlotCalculator(Rectangle pageSize, PageEdgePosition pageEdgePosition, Size marginSize,
+		internal PageEdgeTextSlotCalculator(PageSize pageSize, PageEdgePosition pageEdgePosition,
 			Angle angle, bool reverseDirection)
 		{
 			_angle = angle;
+			_pageSize = pageSize;
 			_pageEdgePosition = pageEdgePosition;
 			_reverseDirection = reverseDirection;
 
 			// Get length of appropriate page side.
-			var appositePageSizeLength = pageEdgePosition switch
-			{
-				// Annoying duplicate here ... roll on, C# 9.0
-				PageEdgePosition.North => pageSize.Width,
-				PageEdgePosition.South => pageSize.Width,
-				_ => pageSize.Height
-			};
+			var appositePageSizeLength = pageEdgePosition.GetPageSideLength(_pageSize);
 
 			// Get the length of the other page side.
 			// If a multi-line page edge watermark is requested, then
 			// it's theoretically possible that there might be too many lines
 			// to actually fit on the page, so we'll check for that.
-			var oppositePageSizeLength = pageEdgePosition switch
-			{
-				// Annoying duplicate here ... roll on, C# 9.0
-				PageEdgePosition.North => pageSize.Height,
-				PageEdgePosition.South => pageSize.Height,
-				_ => pageSize.Width
-			};
+			var oppositePageSizeLength = pageEdgePosition.GetPageSideLength(_pageSize, true);
 
-			// Reduce page size length by the margin size. If the remaining space
-			// is zero or less, then throw an exception.
-			double effectiveMarginSize = marginSize.GetEffectiveSize(pageSize);
-
-			// Handy exception function.
-			void ThrowInsufficientSpaceException(bool apposite, double length)
-			{
-				const string width = "width";
-				const string height = "height";
-				var widthString = apposite ? width : height;
-				var heightString = apposite ? height : width;
-				var northOrSouth = pageEdgePosition == PageEdgePosition.North || pageEdgePosition == PageEdgePosition.South;
-				var pageEdgeDescriptor = northOrSouth ? widthString : heightString;
-				throw new InsufficientSpaceException(
-					$"The requested margin size ({marginSize}) is greater than half of the page {pageEdgeDescriptor} ({length}).");
-			}
-
-			_maximumTextLength = appositePageSizeLength - effectiveMarginSize * 2.0;
-			if (_maximumTextLength <= 0.0)
-				ThrowInsufficientSpaceException(true, appositePageSizeLength);
-			_availableTextStackSpace = oppositePageSizeLength - effectiveMarginSize * 2.0;
-			if (_availableTextStackSpace <= 0.0)
-				ThrowInsufficientSpaceException(false, oppositePageSizeLength);
-
-			_pageTopLeft = new Point(effectiveMarginSize, pageSize.Height - effectiveMarginSize);
-			_pageTopRight = new Point(pageSize.Width - effectiveMarginSize, pageSize.Height - effectiveMarginSize);
-			_pageBottomLeft = new Point(effectiveMarginSize, effectiveMarginSize);
-			_pageBottomRight = new Point(pageSize.Width - effectiveMarginSize, effectiveMarginSize);
+			_maximumTextLength = appositePageSizeLength;
+			_availableTextStackSpace = oppositePageSizeLength;
 
 			_xStepMultiplier = _pageEdgePosition switch
 			{
@@ -187,6 +157,12 @@ namespace Aspidiftra
 
 		public ITextSlotProvider CalculateSlots(float fontSize)
 		{
+			var pageTopLeft = new Point(0, _pageSize.Height);
+			var pageTopRight = new Point(_pageSize.Width, _pageSize.Height);
+			var pageBottomLeft = new Point(0, 0);
+			var pageBottomRight = new Point(_pageSize.Width, 0);
+
+
 			// Build the list of text slots, starting at the outside edge, working in.
 
 			// Figure out the text origin start point for the first line.
@@ -195,17 +171,17 @@ namespace Aspidiftra
 			var startPoint = _pageEdgePosition switch
 			{
 				PageEdgePosition.North => _reverseDirection
-					? _pageTopRight
-					: _pageTopLeft.OffsetBy(0, fontSize * _yStepMultiplier),
+					? pageTopRight
+					: pageTopLeft + (0, fontSize * _yStepMultiplier),
 				PageEdgePosition.South => _reverseDirection
-					? _pageBottomRight.OffsetBy(0, fontSize * _yStepMultiplier)
-					: _pageBottomLeft,
+					? pageBottomRight + (0, fontSize * _yStepMultiplier)
+					: pageBottomLeft,
 				PageEdgePosition.West => _reverseDirection
-					? _pageTopLeft
-					: _pageBottomLeft.OffsetBy(fontSize * _xStepMultiplier, 0),
+					? pageTopLeft
+					: pageBottomLeft + (fontSize * _xStepMultiplier, 0),
 				_ => _reverseDirection
-					? _pageBottomRight
-					: _pageTopRight.OffsetBy(fontSize * _xStepMultiplier, 0)
+					? pageBottomRight
+					: pageTopRight + (fontSize * _xStepMultiplier, 0)
 			};
 
 			var slots = new List<TextSlot>();
@@ -213,7 +189,7 @@ namespace Aspidiftra
 			while (availableTextStackSpace > 0.0)
 			{
 				slots.Add(new TextSlot(startPoint, _maximumTextLength, fontSize, _angle));
-				startPoint = startPoint.OffsetBy(fontSize * _xStepMultiplier, fontSize * _yStepMultiplier);
+				startPoint = startPoint + (fontSize * _xStepMultiplier, fontSize * _yStepMultiplier);
 				availableTextStackSpace -= fontSize;
 			}
 

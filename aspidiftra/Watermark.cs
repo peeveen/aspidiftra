@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using Aspose.Pdf;
 
 namespace Aspidiftra
 {
@@ -22,6 +21,6 @@ namespace Aspidiftra
 			return _pageSelector(availablePageNumbers);
 		}
 
-		public abstract WatermarkElementCollection GetWatermarkElements(Rectangle pageMediaBox);
+		public abstract WatermarkElementCollection GetWatermarkElements(PageSize pageMediaBox);
 	}
 }

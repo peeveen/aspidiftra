@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Aspidiftra;
-using Aspose.Pdf;
+using Aspidiftra.Geometry;
 using Aspose.Pdf.Facades;
-using Watermark = Aspidiftra.Watermark;
 
 namespace AspidiftraTest
 {
@@ -32,9 +31,9 @@ namespace AspidiftraTest
 			_appearance = appearance;
 		}
 
-		public override WatermarkElementCollection GetWatermarkElements(Rectangle pageMediaBox)
+		public override WatermarkElementCollection GetWatermarkElements(PageSize pageSize)
 		{
-			var calculatedFontSize = _appearance.Font.GetSize(pageMediaBox);
+			var calculatedFontSize = _appearance.Font.GetSize(pageSize);
 			var calculatedAngle = Angle.Degrees0;
 			var formattedText = new FormattedText(_text,
 				_appearance.Color,

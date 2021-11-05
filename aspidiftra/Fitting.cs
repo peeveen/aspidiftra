@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Aspidiftra
 {
@@ -36,5 +38,38 @@ namespace Aspidiftra
 		///   Text can be made larger to fit the given area as closely as possible.
 		/// </summary>
 		Grow = 4
+	}
+
+	public static class FittingExtensions
+	{
+		public static Fitting Normalize(this Fitting fitting, IEnumerable<string> text)
+		{
+			return text.Count() > 1 ? fitting.Remove(Fitting.Wrap) : fitting;
+		}
+
+		public static bool Has(this Fitting fitting, Fitting check)
+		{
+			return (fitting & check) == check;
+		}
+
+		public static bool HasWrap(this Fitting fitting)
+		{
+			return fitting.Has(Fitting.Wrap);
+		}
+
+		public static bool HasShrink(this Fitting fitting)
+		{
+			return fitting.Has(Fitting.Shrink);
+		}
+
+		public static bool HasGrow(this Fitting fitting)
+		{
+			return fitting.Has(Fitting.Grow);
+		}
+
+		public static Fitting Remove(this Fitting fitting, Fitting flagToRemove)
+		{
+			return fitting & ~flagToRemove;
+		}
 	}
 }

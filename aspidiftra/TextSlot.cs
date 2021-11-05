@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Aspose.Pdf;
+﻿using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
@@ -43,7 +41,8 @@ namespace Aspidiftra
 			{
 				yOffset = Width * Angle.Cos;
 			}
-			return TextOrigin.OffsetBy(-xOffset, -yOffset);
+
+			return TextOrigin + (-xOffset, -yOffset);
 		}
 	}
 }

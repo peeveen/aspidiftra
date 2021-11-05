@@ -3,11 +3,14 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Aspidiftra;
+using Aspidiftra.Geometry;
 using Aspose.Pdf;
 using Aspose.Pdf.Text;
 using NUnit.Framework;
 using Color = System.Drawing.Color;
 using Font = Aspidiftra.Font;
+using Point = Aspidiftra.Geometry.Point;
+using Rectangle = Aspidiftra.Geometry.Rectangle;
 
 namespace AspidiftraTest
 {
@@ -16,7 +19,7 @@ namespace AspidiftraTest
 		/// <summary>
 		///   Acceptable amount to be "off by" for floating point operations.
 		/// </summary>
-		private const double AcceptableVariance = 0.0000001;
+		internal const double GeometricTolerance = 0.0000001;
 
 		private const string TestPdfsFolder = "..\\..\\..\\TestPDFs";
 		private const string OutputPdfsFolder = "..\\..\\..\\OutputPDFs";
@@ -49,33 +52,49 @@ namespace AspidiftraTest
 
 		[Test]
 		[Order(0)]
+		public void LineTests()
+		{
+			var line1 = new Line(new Point(0.0, 0.0), new Angle(45.0, AngleUnits.Degrees));
+			var line2 = new Line(new Point(10.0, 0.0), new Angle(135.0, AngleUnits.Degrees));
+			var intersectionPoint1 = line1.GetIntersectionPoint(line2);
+			Assert.AreEqual(new Point(5.0, 5.0), intersectionPoint1);
+
+			var verticalLine = new Line(new Point(20.0, 50.0), Angle.Degrees270);
+			var intersectionPoint2 = line1.GetIntersectionPoint(verticalLine);
+			Assert.AreEqual(new Point(20.0, 20.0), intersectionPoint2);
+		}
+
+		[Test]
+		[Order(0)]
 		public void AngleTests()
 		{
+			Assert.AreEqual(Angle.Degrees180, Angle.RadiansPi);
+
 			var checkNormalizationDegrees1 = new Angle(700.0, AngleUnits.Degrees);
-			Assert.AreEqual(340.0, checkNormalizationDegrees1.Value, AcceptableVariance);
+			Assert.AreEqual(340.0, checkNormalizationDegrees1.Value, GeometricTolerance);
 			var checkNormalizationDegrees2 = new Angle(-1000000.0, AngleUnits.Degrees);
-			Assert.AreEqual(80.0, checkNormalizationDegrees2.Value, AcceptableVariance);
+			Assert.AreEqual(80.0, checkNormalizationDegrees2.Value, GeometricTolerance);
 			var checkNormalizationRadians1 = new Angle(Math.PI * (7.0 / 3.0), AngleUnits.Radians);
-			Assert.AreEqual(Math.PI * (1.0 / 3.0), checkNormalizationRadians1.Value, AcceptableVariance);
+			Assert.AreEqual(Math.PI * (1.0 / 3.0), checkNormalizationRadians1.Value, GeometricTolerance);
 			var checkNormalizationRadians2 = new Angle(-Math.PI * (10000.0 / 3.0), AngleUnits.Radians);
-			Assert.AreEqual(Math.PI * (2.0 / 3.0), checkNormalizationRadians2.Value, AcceptableVariance);
+			Assert.AreEqual(Math.PI * (2.0 / 3.0), checkNormalizationRadians2.Value, GeometricTolerance);
 
 			var thirtyDegrees = new Angle(30.0, AngleUnits.Degrees);
 			var xReversedThirtyDegrees = thirtyDegrees.ReverseX();
-			Assert.AreEqual(330.0, xReversedThirtyDegrees.Value, AcceptableVariance);
+			Assert.AreEqual(330.0, xReversedThirtyDegrees.Value, GeometricTolerance);
 			var yReversedThirtyDegrees = thirtyDegrees.ReverseY();
-			Assert.AreEqual(150.0, yReversedThirtyDegrees.Value, AcceptableVariance);
+			Assert.AreEqual(150.0, yReversedThirtyDegrees.Value, GeometricTolerance);
 			var reversedThirtyDegrees = thirtyDegrees.Reverse();
-			Assert.AreEqual(210.0, reversedThirtyDegrees.Value, AcceptableVariance);
+			Assert.AreEqual(210.0, reversedThirtyDegrees.Value, GeometricTolerance);
 
 			// 300 degrees.
 			var largeRadiansAngle = new Angle(Math.PI * (5.0 / 3.0), AngleUnits.Radians);
 			var xReversedRadians = largeRadiansAngle.ReverseX();
-			Assert.AreEqual(Math.PI * (1.0 / 3.0), xReversedRadians.Value, AcceptableVariance);
+			Assert.AreEqual(Math.PI * (1.0 / 3.0), xReversedRadians.Value, GeometricTolerance);
 			var yReversedRadians = largeRadiansAngle.ReverseY();
-			Assert.AreEqual(Math.PI * (4.0 / 3.0), yReversedRadians.Value, AcceptableVariance);
+			Assert.AreEqual(Math.PI * (4.0 / 3.0), yReversedRadians.Value, GeometricTolerance);
 			var reversedRadians = largeRadiansAngle.Reverse();
-			Assert.AreEqual(Math.PI * (2.0 / 3.0), reversedRadians.Value, AcceptableVariance);
+			Assert.AreEqual(Math.PI * (2.0 / 3.0), reversedRadians.Value, GeometricTolerance);
 		}
 
 		[Test]
@@ -84,19 +103,18 @@ namespace AspidiftraTest
 		{
 			const double rectWidth = 10.0;
 			const double rectHeight = 20.0;
-			var diagonalAngleRadians = Math.Atan(rectHeight / rectWidth);
-			var diagonalAngleDegrees = diagonalAngleRadians * 180.0 / Math.PI;
+			var diagonalAngleRadians = new Angle(Math.Atan(rectHeight / rectWidth), AngleUnits.Radians);
 			var rect = new Rectangle(0, 0, rectWidth, rectHeight);
 			Assert.AreEqual(Math.Sqrt(rectWidth * rectWidth + rectHeight * rectHeight), rect.DiagonalLength(),
-				AcceptableVariance);
-			Assert.AreEqual(rectWidth + rectHeight / 2.0, rect.AverageSideLength(), AcceptableVariance);
+				GeometricTolerance);
+			Assert.AreEqual(rectWidth + rectHeight / 2.0, rect.AverageSideLength(), GeometricTolerance);
 			Assert.AreEqual(rectHeight, rect.LongestSideLength());
 			Assert.AreEqual(rectWidth, rect.ShortestSideLength());
-			Assert.AreEqual(diagonalAngleDegrees, rect.DiagonalAngle());
+			Assert.AreEqual(diagonalAngleRadians, rect.DiagonalAngle());
 		}
 
 		[Test]
-		[Order(0)]
+		[Order(1)]
 		public void Concatenate()
 		{
 			var outputPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
@@ -109,64 +127,23 @@ namespace AspidiftraTest
 		}
 
 		[Test]
-		public void TestFontHeight()
-		{
-			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
-			var outputPdfPath = Path.Join(OutputPdfsFolder, "FontHeightTest.pdf");
-			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(100.0f, Sizing.Absolute));
-			var watermarkAppearance = new Appearance(Color.Red, 0.8f, watermarkFont);
-			var pageEdgeWatermark = new FontSizeTestWatermark("This is a page edge watermark test", watermarkAppearance);
-
-			using var aspDoc = new AspidiftraDocument(testPdfPath);
-			aspDoc.ApplyWatermarks(new[] {pageEdgeWatermark});
-			aspDoc.Save(outputPdfPath);
-
-			// TODO: Test the output, somehow?
-		}
-
-		[Test]
+		[Order(2)]
 		public void ApplyWatermark()
 		{
 			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "PageEdgeWatermarked.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Red, 0.6f, watermarkFont);
-			var pageEdgeWatermark = new PageEdgeWatermark("This is a page edge watermark test\nGood, innit?",
+			var pageEdgeWatermark = new PageEdgeWatermark(
+				"This is a page edge watermark test that I hope will execute successfully.",
 				watermarkAppearance,
-				PageEdgePosition.West, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
-				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
+				PageEdgePosition.South, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
+				new Size(0.08f, Sizing.RelativeToAverageSideLength), true);
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
 			aspDoc.ApplyWatermarks(new[] {pageEdgeWatermark});
 			aspDoc.Save(outputPdfPath);
 
-			// TODO: Test the output, somehow?
-		}
-
-		[Test]
-		public void GenerateDoc()
-		{
-			var doc = new Document();
-			for (var f = 0; f < 5; ++f)
-			{
-				var page = doc.Pages.Add();
-				page.MediaBox = new Rectangle(0, 0, 841.98, 595.38);
-				var text = new TextFragment($"FivePages\nPage {f + 1}\nPageSize = (0, 0, 841.98, 595.38)")
-				{
-					Position = new Position(100, 100)
-				};
-				page.Paragraphs.Add(text);
-			}
-
-			var outputPath = Path.Join(TestPdfsFolder, "16_FivePages_841.98_595.38.pdf");
-			doc.Save(outputPath);
-		}
-
-		[Test]
-		public void OpenDoc()
-		{
-			var testPdfPath = Path.Join(TestPdfsFolder, "05_NegativeHorizontalAndVerticalCoordinateSpace_1600_2400.pdf");
-			var doc = new AspidiftraDocument(testPdfPath);
 			// TODO: Test the output, somehow?
 		}
 	}
