@@ -9,6 +9,7 @@ using Aspose.Pdf.Text;
 using NUnit.Framework;
 using Color = System.Drawing.Color;
 using Font = Aspidiftra.Font;
+using PageSize = Aspidiftra.PageSize;
 using Point = Aspidiftra.Geometry.Point;
 using Rectangle = Aspidiftra.Geometry.Rectangle;
 
@@ -62,6 +63,18 @@ namespace AspidiftraTest
 			var verticalLine = new Line(new Point(20.0, 50.0), Angle.Degrees270);
 			var intersectionPoint2 = line1.GetIntersectionPoint(verticalLine);
 			Assert.AreEqual(new Point(20.0, 20.0), intersectionPoint2);
+
+			var page = new PageSize(500, 720);
+			var pageCenterPoint = page.Center;
+			var pageLines = page.Lines;
+			for (var angle = 0.0; angle < 360.0; angle += 0.01)
+			{
+				var lineThroughPage = new Line(pageCenterPoint, new Angle(angle, AngleUnits.Degrees));
+				var intersectionPoints = pageLines.Select(line => line.GetIntersectionPoint(lineThroughPage))
+					.Where(point => point != null && page.Contains(point));
+				Assert.AreEqual(2, intersectionPoints.Count(),
+					$"There should only be two intersection points (angle was {angle})");
+			}
 		}
 
 		[Test]
@@ -128,7 +141,7 @@ namespace AspidiftraTest
 
 		[Test]
 		[Order(2)]
-		public void ApplyWatermark()
+		public void ApplyPageEdgeWatermark()
 		{
 			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "PageEdgeWatermarked.pdf");
@@ -142,6 +155,26 @@ namespace AspidiftraTest
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
 			aspDoc.ApplyWatermarks(new[] {pageEdgeWatermark});
+			aspDoc.Save(outputPdfPath);
+
+			// TODO: Test the output, somehow?
+		}
+
+		[Test]
+		[Order(2)]
+		public void ApplyBannerWatermark()
+		{
+			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "BannerWatermarked.pdf");
+			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.035f, Sizing.RelativeToDiagonalSize));
+			var watermarkAppearance = new Appearance(Color.Green, 0.6f, watermarkFont);
+			var bannerWatermark = new BannerWatermark(
+				"This is a banner watermark test that I hope will execute successfully.",
+				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
+				new Size(0.08f, Sizing.RelativeToAverageSideLength), new SouthWestToNorthEastBannerAngle());
+
+			using var aspDoc = new AspidiftraDocument(testPdfPath);
+			aspDoc.ApplyWatermarks(new[] { bannerWatermark });
 			aspDoc.Save(outputPdfPath);
 
 			// TODO: Test the output, somehow?

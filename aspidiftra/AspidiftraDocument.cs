@@ -15,7 +15,7 @@ namespace Aspidiftra
 		private readonly IImmutableSet<int> _pageNumbers;
 		private readonly IImmutableDictionary<PageSize, ImmutableList<int>> _pagesBySize;
 
-		public AspidiftraDocument(string path, string password = null)
+		public AspidiftraDocument(string path, string? password = null)
 		{
 			var document = new Document(path, password);
 			_pageNumbers = document.Pages.Select(page => page.Number).ToImmutableHashSet();

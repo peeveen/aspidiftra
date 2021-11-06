@@ -7,7 +7,7 @@ namespace Aspidiftra
 	{
 		private readonly Func<IImmutableSet<int>, IImmutableSet<int>> _pageSelector;
 
-		protected Watermark(float opacity, Func<IImmutableSet<int>, IImmutableSet<int>> pageSelector = null)
+		protected Watermark(float opacity, Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
 		{
 			Opacity = opacity;
 			// If no page selector function is provided, assume all pages are to be watermarked.

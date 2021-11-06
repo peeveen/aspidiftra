@@ -10,8 +10,18 @@ namespace Aspidiftra.Geometry
 			Bottom = bottom;
 			Top = top;
 			Right = right;
+			BottomLeft = new Point(Left, Bottom);
+			TopRight = new Point(Right, Top);
 			Width = Math.Abs(right - left);
 			Height = Math.Abs(top - bottom);
+			Center = new Point((Left + Right) / 2.0, (Bottom + Top) / 2.0);
+			Lines = new[]
+			{
+				new Line(BottomLeft, 0.0),
+				new Line(BottomLeft, double.PositiveInfinity),
+				new Line(TopRight, 0.0),
+				new Line(TopRight, double.PositiveInfinity)
+			};
 		}
 
 		public Rectangle(Rectangle rectangle) : this(rectangle.Left, rectangle.Bottom, rectangle.Right, rectangle.Top)
@@ -26,10 +36,12 @@ namespace Aspidiftra.Geometry
 		public double Height { get; }
 		public double Left { get; }
 		public double Bottom { get; }
+		public Point BottomLeft { get; }
+		public Point TopRight { get; }
+		public Point Center { get; }
 		public double Right { get; }
 		public double Top { get; }
-
-		public Point Centre => new Point(Left + Width / 2.0, Bottom + Height / 2.0);
+		public Line[] Lines { get; }
 
 		public Rectangle Deflate(double amount)
 		{
@@ -76,7 +88,15 @@ namespace Aspidiftra.Geometry
 			return new Angle(Math.Atan(Height / Width), AngleUnits.Radians);
 		}
 
-		public override bool Equals(object obj)
+		public bool Contains(Point point)
+		{
+			return point.X > Left - AspidiftraUtil.GeometricTolerance &&
+			       point.X < Right + AspidiftraUtil.GeometricTolerance &&
+			       point.Y > Bottom - AspidiftraUtil.GeometricTolerance &&
+			       point.Y < Top + AspidiftraUtil.GeometricTolerance;
+		}
+
+		public override bool Equals(object? obj)
 		{
 			if (this == obj) return true;
 			if (obj is Rectangle otherRect)

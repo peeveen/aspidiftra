@@ -55,7 +55,7 @@ namespace Aspidiftra
 		/// </param>
 		public PageEdgeWatermark(string text, Appearance appearance, PageEdgePosition position,
 			Justification justification, Fitting fit, Size marginSize, bool reverseDirection = false,
-			Func<IImmutableSet<int>, IImmutableSet<int>> pageSelector = null
+			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null
 		) : base(appearance.Opacity, pageSelector)
 		{
 			_text = AspidiftraUtil.SplitTextIntoLines(text);
@@ -102,7 +102,7 @@ namespace Aspidiftra
 			// All calculated coordinates from the TextPositionCalculator will be for a page size
 			// without the margins. We need to reapply the margin offset here.
 			var elements = positionedText.Select(txt => new WatermarkElement(
-				txt.Position + (effectiveMarginSize, effectiveMarginSize),
+				txt.Position + new Offset(effectiveMarginSize, effectiveMarginSize),
 				new FormattedText(txt.Text, _appearance.Color, _appearance.Font.Name, EncodingType.Winansi,
 					false, positionedText.FontSize)));
 
@@ -172,16 +172,16 @@ namespace Aspidiftra
 			{
 				PageEdgePosition.North => _reverseDirection
 					? pageTopRight
-					: pageTopLeft + (0, fontSize * _yStepMultiplier),
+					: pageTopLeft + new Offset(0, fontSize * _yStepMultiplier),
 				PageEdgePosition.South => _reverseDirection
-					? pageBottomRight + (0, fontSize * _yStepMultiplier)
+					? pageBottomRight + new Offset(0, fontSize * _yStepMultiplier)
 					: pageBottomLeft,
 				PageEdgePosition.West => _reverseDirection
 					? pageTopLeft
-					: pageBottomLeft + (fontSize * _xStepMultiplier, 0),
+					: pageBottomLeft + new Offset(fontSize * _xStepMultiplier, 0),
 				_ => _reverseDirection
 					? pageBottomRight
-					: pageTopRight + (fontSize * _xStepMultiplier, 0)
+					: pageTopRight + new Offset(fontSize * _xStepMultiplier, 0)
 			};
 
 			var slots = new List<TextSlot>();
@@ -189,7 +189,7 @@ namespace Aspidiftra
 			while (availableTextStackSpace > 0.0)
 			{
 				slots.Add(new TextSlot(startPoint, _maximumTextLength, fontSize, _angle));
-				startPoint = startPoint + (fontSize * _xStepMultiplier, fontSize * _yStepMultiplier);
+				startPoint = startPoint + new Offset(fontSize * _xStepMultiplier, fontSize * _yStepMultiplier);
 				availableTextStackSpace -= fontSize;
 			}
 

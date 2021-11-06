@@ -5,9 +5,6 @@ namespace Aspidiftra
 {
 	internal class AssignedTextSlot
 	{
-		// Handle constant for a zero offset.
-		private static readonly (double, double) NoOffset = (0.0, 0.0);
-
 		private readonly Justification _justification;
 
 		internal AssignedTextSlot(MeasuredString text, TextSlot slot, Justification justification)
@@ -20,7 +17,7 @@ namespace Aspidiftra
 		internal MeasuredString Text { get; }
 		internal TextSlot Slot { get; }
 
-		internal (double X, double Y) JustificationOffset
+		internal Offset JustificationOffset
 		{
 			get
 			{
@@ -29,14 +26,15 @@ namespace Aspidiftra
 				var spareSlotSpace = Slot.Width - Text.Length;
 				return _justification switch
 				{
-					Justification.Left when leftJustifiedAlready => NoOffset,
-					Justification.Right when rightJustifiedAlready => NoOffset,
+					Justification.Left when leftJustifiedAlready => Offset.None,
+					Justification.Right when rightJustifiedAlready => Offset.None,
 					Justification.Centre =>
-						(Math.Abs(spareSlotSpace / 2.0 * Slot.Angle.Cos), Math.Abs(spareSlotSpace / 2.0 * Slot.Angle.Sin)),
+						new Offset(Math.Abs(spareSlotSpace / 2.0 * Slot.Angle.Cos),
+							Math.Abs(spareSlotSpace / 2.0 * Slot.Angle.Sin)),
 					_ =>
 						// Due to the angle, text is appearing left or right justified by default,
 						// but we want it the opposite way.
-						(Math.Abs(spareSlotSpace * Slot.Angle.Cos), Math.Abs(spareSlotSpace * Slot.Angle.Sin))
+						new Offset(Math.Abs(spareSlotSpace * Slot.Angle.Cos), Math.Abs(spareSlotSpace * Slot.Angle.Sin))
 				};
 			}
 		}

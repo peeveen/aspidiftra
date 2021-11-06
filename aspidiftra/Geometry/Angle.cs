@@ -38,6 +38,7 @@ namespace Aspidiftra.Geometry
 
 		private readonly double _fullCircle;
 		private readonly double _halfCircle;
+		private readonly double _quarterCircle;
 		private double? _cachedCosValue;
 
 		private double? _cachedSinValue;
@@ -52,7 +53,8 @@ namespace Aspidiftra.Geometry
 			Units = angleUnits;
 			// Create a couple of handy constants, depending on the units.
 			_halfCircle = Units == AngleUnits.Degrees ? 180.0 : Math.PI;
-			_fullCircle = Units == AngleUnits.Degrees ? 360 : TwoPi;
+			_fullCircle = Units == AngleUnits.Degrees ? 360.0 : TwoPi;
+			_quarterCircle = Units == AngleUnits.Degrees ? 90.0 : HalfPi;
 			Value = Normalize(value);
 		}
 
@@ -70,6 +72,26 @@ namespace Aspidiftra.Geometry
 		public double Sin => _cachedSinValue ??= Math.Sin(ToRadians().Value);
 
 		public double Cos => _cachedCosValue ??= Math.Cos(ToRadians().Value);
+
+		public bool IsVertical
+		{
+			get
+			{
+				if (ReferenceEquals(this, Degrees90) || ReferenceEquals(this, Degrees270) ||
+				    ReferenceEquals(this, RadiansHalfPi) || ReferenceEquals(this, RadiansOneAndAHalfPi))
+					return true;
+				switch (Units)
+				{
+					case AngleUnits.Degrees when Math.Abs(Value - 90.0) < AspidiftraUtil.GeometricTolerance ||
+					                             Math.Abs(Value - 180.0) < AspidiftraUtil.GeometricTolerance:
+					case AngleUnits.Radians when Math.Abs(Value - HalfPi) < AspidiftraUtil.GeometricTolerance ||
+					                             Math.Abs(Value - OneAndAHalfPi) < AspidiftraUtil.GeometricTolerance:
+						return true;
+					default:
+						return false;
+				}
+			}
+		}
 
 		/// <summary>
 		///   Flips the angle along the X axis.
@@ -142,6 +164,27 @@ namespace Aspidiftra.Geometry
 			if (ReferenceEquals(this, Degrees270))
 				return Degrees90;
 			return new Angle(Normalize(Value + _halfCircle), Units);
+		}
+
+		public Angle Rotate90(bool clockwise)
+		{
+			if (ReferenceEquals(this, Radians0))
+				return clockwise ? RadiansOneAndAHalfPi : RadiansHalfPi;
+			if (ReferenceEquals(this, RadiansHalfPi))
+				return clockwise ? Radians0 : RadiansPi;
+			if (ReferenceEquals(this, RadiansPi))
+				return clockwise ? RadiansHalfPi : RadiansOneAndAHalfPi;
+			if (ReferenceEquals(this, RadiansOneAndAHalfPi))
+				return clockwise ? RadiansPi : Radians0;
+			if (ReferenceEquals(this, Degrees0))
+				return clockwise ? Degrees270 : Degrees90;
+			if (ReferenceEquals(this, Degrees90))
+				return clockwise ? Degrees0 : Degrees180;
+			if (ReferenceEquals(this, Degrees180))
+				return clockwise ? Degrees90 : Degrees270;
+			if (ReferenceEquals(this, Degrees270))
+				return clockwise ? Degrees180 : Degrees0;
+			return new Angle(Normalize(Value + (clockwise ? -_quarterCircle : _quarterCircle)), Units);
 		}
 
 		/// <summary>
@@ -252,7 +295,7 @@ namespace Aspidiftra.Geometry
 			return !(a == b);
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is Angle angleObj)
 				return this == angleObj;

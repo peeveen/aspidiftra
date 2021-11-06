@@ -6,26 +6,53 @@ namespace Aspidiftra.Geometry
 	// So a point and an angle is all that we need to define any line.
 	public class Line
 	{
-		public Line(Point point, Angle angle)
+		public Line(Point point, Angle angle) :
+			this(point, angle.IsVertical ? double.PositiveInfinity : Math.Tan(angle.ToRadians().Value))
+		{
+		}
+
+		public Line(Point point, double gradient)
 		{
 			Point = point;
-			// A vertical line has infinite gradient. But lucky for us,
-			// the radian values for 90 or 270 degrees are 0.5*PI and
-			// 1.5*PI respectively, and neither of those values can be
-			// represented in floating-point precisely enough for the
-			// Math.Tan operation to return actual infinity.
-			// Instead, it will "only" return a very, very large number,
-			// which we can happily perform arithmetic with.
-			Gradient = Math.Tan(angle.ToRadians().Value);
-			Constant = Point.Y - Gradient * Point.X;
+			Gradient = gradient;
+			Constant = IsVertical ? 0.0 : Point.Y - Gradient * Point.X;
 		}
 
 		public Point Point { get; }
 		public double Gradient { get; }
 		public double Constant { get; }
+		public bool IsVertical => double.IsPositiveInfinity(Gradient);
+
+		public Point? GetPointAtX(double x)
+		{
+			return IsVertical ? null : new Point(x, Gradient * x + Constant);
+		}
 
 		public Point? GetIntersectionPoint(Line line)
 		{
+			// Floating-point arithmetic doesn't play nice with infinity,
+			// so get the special cases dealt with here.
+			var thisIsVertical = IsVertical;
+			var otherLineIsVertical = line.IsVertical;
+			switch (thisIsVertical)
+			{
+				// Lines are parallel, forget it.
+				// Even if they overlap, there would be infinite intersection points.
+				case true when otherLineIsVertical:
+					return null;
+				// So this line is vertical. Solve other line's equation for
+				// this line's X value.
+				case true:
+					return line.GetPointAtX(Point.X);
+			}
+
+			if (otherLineIsVertical)
+				// So the other line is vertical. Solve this line's equation for
+				// the other line's X value.
+				return GetPointAtX(line.Point.X);
+
+			// So now we know that neither line is vertical. We can do the
+			// usual solution.
 			var gradientDiff = Gradient - line.Gradient;
 			if (Math.Abs(gradientDiff) < AspidiftraUtil.GeometricTolerance)
 				return null;
@@ -36,10 +63,7 @@ namespace Aspidiftra.Geometry
 			var constantDiff = line.Constant - Constant;
 			// So now:
 			// x = constantDiff/gradientDiff
-			var x = constantDiff / gradientDiff;
-			// Solve for Y in either line equation.
-			var y = Gradient * x + Constant;
-			return new Point(x, y);
+			return GetPointAtX(constantDiff / gradientDiff);
 		}
 	}
 }
