@@ -83,7 +83,7 @@ namespace Aspidiftra.Geometry
 				switch (Units)
 				{
 					case AngleUnits.Degrees when Math.Abs(Value - 90.0) < AspidiftraUtil.GeometricTolerance ||
-					                             Math.Abs(Value - 180.0) < AspidiftraUtil.GeometricTolerance:
+					                             Math.Abs(Value - 270.0) < AspidiftraUtil.GeometricTolerance:
 					case AngleUnits.Radians when Math.Abs(Value - HalfPi) < AspidiftraUtil.GeometricTolerance ||
 					                             Math.Abs(Value - OneAndAHalfPi) < AspidiftraUtil.GeometricTolerance:
 						return true;

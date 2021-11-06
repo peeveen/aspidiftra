@@ -44,7 +44,7 @@ namespace Aspidiftra
 		///   True if the direction of the text should be reversed from the
 		///   default text direction of <paramref name="position" />.
 		///   A value of true can result in text being rendered upside-down if
-		///   <paramref name="position" /> is North or South.
+		///   <paramref name="position" /> is Top or Bottom.
 		/// </param>
 		/// <param name="fit">
 		///   Should the text be made smaller/larger/wrapped to fit the area?
@@ -143,14 +143,14 @@ namespace Aspidiftra
 
 			_xStepMultiplier = _pageEdgePosition switch
 			{
-				PageEdgePosition.East => -1,
-				PageEdgePosition.West => 1,
+				PageEdgePosition.Right => -1,
+				PageEdgePosition.Left => 1,
 				_ => 0
 			};
 			_yStepMultiplier = _pageEdgePosition switch
 			{
-				PageEdgePosition.North => -1,
-				PageEdgePosition.South => 1,
+				PageEdgePosition.Top => -1,
+				PageEdgePosition.Bottom => 1,
 				_ => 0
 			};
 		}
@@ -170,13 +170,13 @@ namespace Aspidiftra
 			// character.
 			var startPoint = _pageEdgePosition switch
 			{
-				PageEdgePosition.North => _reverseDirection
+				PageEdgePosition.Top => _reverseDirection
 					? pageTopRight
 					: pageTopLeft + new Offset(0, fontSize * _yStepMultiplier),
-				PageEdgePosition.South => _reverseDirection
+				PageEdgePosition.Bottom => _reverseDirection
 					? pageBottomRight + new Offset(0, fontSize * _yStepMultiplier)
 					: pageBottomLeft,
-				PageEdgePosition.West => _reverseDirection
+				PageEdgePosition.Left => _reverseDirection
 					? pageTopLeft
 					: pageBottomLeft + new Offset(fontSize * _xStepMultiplier, 0),
 				_ => _reverseDirection
@@ -217,9 +217,9 @@ namespace Aspidiftra
 				throw new InsufficientSlotsException(amount, _slots.Count);
 			return _pageEdgePosition switch
 			{
-				// South is a special case, because, unlike the others, the top edge of the text is, by
+				// Bottom is a special case, because, unlike the others, the top edge of the text is, by
 				// default, not along the page edge.
-				PageEdgePosition.South => _reverseDirection ? _slots.Take(amount) : _slots.Take(amount).Reverse(),
+				PageEdgePosition.Bottom => _reverseDirection ? _slots.Take(amount) : _slots.Take(amount).Reverse(),
 				_ => _reverseDirection ? _slots.Take(amount).Reverse() : _slots.Take(amount)
 			};
 		}

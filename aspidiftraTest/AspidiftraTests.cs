@@ -150,7 +150,7 @@ namespace AspidiftraTest
 			var pageEdgeWatermark = new PageEdgeWatermark(
 				"This is a page edge watermark test that I hope will execute successfully.",
 				watermarkAppearance,
-				PageEdgePosition.South, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
+				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
@@ -172,7 +172,7 @@ namespace AspidiftraTest
 			var bannerWatermark = new BannerWatermark(
 				"This is a banner watermark test that I sincerely hope will execute successfully, mainly because the maths involved was bloody difficult.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
-				new Size(0.08f, Sizing.RelativeToAverageSideLength), new TopLeftToBottomRightBannerAngle());
+				new Size(0.08f, Sizing.RelativeToAverageSideLength), new CustomBannerAngle(Angle.Degrees270));
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
 			aspDoc.ApplyWatermarks(new[] { bannerWatermark });
