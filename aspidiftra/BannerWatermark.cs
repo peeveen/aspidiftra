@@ -256,20 +256,16 @@ namespace Aspidiftra
 
 		public IEnumerable<TextSlot> GetTextSlots(int amount)
 		{
-			IEnumerable<TextSlot> GetSlots(int amount, IImmutableList<TextSlot> slots)
-			{
-				var availableSlots = slots.Count;
-				if (availableSlots < amount)
-					throw new InsufficientSlotsException(amount, availableSlots);
-				var topAndTail = (availableSlots - amount) / 2;
-				var topped = slots.RemoveRange(0, topAndTail);
-				var tailed = topped.RemoveRange(amount, topAndTail);
-				return tailed;
-			}
-
 			// If we're asked for an odd number of slots, take the middle selection from _oddSlots.
 			// If we're asked for an even number of slots, take the middle selection from _evenSlots.
-			return GetSlots(amount, amount % 2 == 1 ? _oddSlots : _evenSlots);
+			var slots = amount % 2 == 1 ? _oddSlots : _evenSlots;
+			var availableSlots = slots.Count;
+			if (availableSlots < amount)
+				throw new InsufficientSlotsException(amount, availableSlots);
+			var topAndTail = (availableSlots - amount) / 2;
+			var topped = slots.RemoveRange(0, topAndTail);
+			var tailed = topped.RemoveRange(amount, topAndTail);
+			return tailed;
 		}
 	}
 }

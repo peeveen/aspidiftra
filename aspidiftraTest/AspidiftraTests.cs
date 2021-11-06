@@ -164,12 +164,13 @@ namespace AspidiftraTest
 		[Order(2)]
 		public void ApplyBannerWatermark()
 		{
-			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
+			var testPdfPath = Path.Join(TestPdfsFolder, CropBox);
+			//var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "BannerWatermarked.pdf");
-			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.035f, Sizing.RelativeToDiagonalSize));
+			var watermarkFont = new Font("Helvetica", FontStyles.Regular, new Size(.035f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Green, 0.6f, watermarkFont);
 			var bannerWatermark = new BannerWatermark(
-				"This is a banner watermark test that I hope will execute successfully.",
+				"This is a banner watermark test that I sincerely hope will execute successfully, mainly because the maths involved was bloody difficult.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.08f, Sizing.RelativeToAverageSideLength), new SouthWestToNorthEastBannerAngle());
 
