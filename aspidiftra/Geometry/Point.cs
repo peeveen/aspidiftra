@@ -23,6 +23,11 @@ namespace Aspidiftra.Geometry
 			return new Point(start.X - offset.X, start.Y - offset.Y);
 		}
 
+		public static Offset operator -(Point end, Point start)
+		{
+			return new Offset(end.X - start.X, end.Y - start.Y);
+		}
+
 		public double GetDistanceFrom(Point otherPoint)
 		{
 			var xDiff = X - otherPoint.X;

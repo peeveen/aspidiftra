@@ -39,7 +39,7 @@ namespace Aspidiftra
 			}
 			else
 			{
-				yOffset = Width * Angle.Cos;
+				yOffset = Width * -Angle.Sin;
 			}
 
 			return TextOrigin + new Offset(-xOffset, -yOffset);

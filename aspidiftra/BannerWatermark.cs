@@ -236,10 +236,20 @@ namespace Aspidiftra
 			// though.
 			// Find the angles between the two points in both directions. Return them in the order
 			// that is closest to the desired banner angle.
-			// TODO: that.
-			var startPoint = textSlotStartAndEndPoints[0];
-			var endPoint = textSlotStartAndEndPoints[1];
-			return new TextSlot(startPoint, startPoint.GetDistanceFrom(endPoint), slotHeight, _angle);
+			var firstPoint = textSlotStartAndEndPoints[0];
+			var secondPoint = textSlotStartAndEndPoints[1];
+			var offsetFromFirstToSecond = secondPoint - firstPoint;
+			var offsetFromSecondToFirst = firstPoint - secondPoint;
+			var angleFromFirstToSecond =
+				new Angle(Math.Atan2(offsetFromFirstToSecond.Y, offsetFromFirstToSecond.X), AngleUnits.Radians);
+			var angleFromSecondToFirst =
+				new Angle(Math.Atan2(offsetFromSecondToFirst.Y, offsetFromSecondToFirst.X), AngleUnits.Radians);
+			var angleInRadians = _angle.ToRadians().Value;
+			var firstToSecondAngleDiff = Math.Abs(angleInRadians - angleFromFirstToSecond.Value);
+			var secondToFirstAngleDiff = Math.Abs(angleInRadians - angleFromSecondToFirst.Value);
+			if (secondToFirstAngleDiff < firstToSecondAngleDiff)
+				(secondPoint, firstPoint) = (firstPoint, secondPoint);
+			return new TextSlot(firstPoint, firstPoint.GetDistanceFrom(secondPoint), slotHeight, _angle);
 		}
 	}
 

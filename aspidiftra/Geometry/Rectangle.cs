@@ -75,19 +75,6 @@ namespace Aspidiftra.Geometry
 			return Math.Max(Width, Height);
 		}
 
-		/// <summary>
-		///   Calculates the angle between the X axis and the line that
-		///   runs from the bottom-left corner to the top-right corner.
-		/// </summary>
-		/// <returns>
-		///   Angle between the X axis and the line that runs from the
-		///   bottom-left corner to the top-right corner.
-		/// </returns>
-		public Angle DiagonalAngle()
-		{
-			return new Angle(Math.Atan(Height / Width), AngleUnits.Radians);
-		}
-
 		public bool Contains(Point point)
 		{
 			return point.X > Left - AspidiftraUtil.GeometricTolerance &&

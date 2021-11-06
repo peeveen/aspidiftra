@@ -123,7 +123,7 @@ namespace AspidiftraTest
 			Assert.AreEqual(rectWidth + rectHeight / 2.0, rect.AverageSideLength(), GeometricTolerance);
 			Assert.AreEqual(rectHeight, rect.LongestSideLength());
 			Assert.AreEqual(rectWidth, rect.ShortestSideLength());
-			Assert.AreEqual(diagonalAngleRadians, rect.DiagonalAngle());
+			Assert.AreEqual(diagonalAngleRadians, new PageSize(rect.Width,rect.Height).BottomLeftToTopRightAngle());
 		}
 
 		[Test]
@@ -151,7 +151,7 @@ namespace AspidiftraTest
 				"This is a page edge watermark test that I hope will execute successfully.",
 				watermarkAppearance,
 				PageEdgePosition.South, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
-				new Size(0.08f, Sizing.RelativeToAverageSideLength), true);
+				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
 			aspDoc.ApplyWatermarks(new[] {pageEdgeWatermark});
@@ -172,7 +172,7 @@ namespace AspidiftraTest
 			var bannerWatermark = new BannerWatermark(
 				"This is a banner watermark test that I sincerely hope will execute successfully, mainly because the maths involved was bloody difficult.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
-				new Size(0.08f, Sizing.RelativeToAverageSideLength), new SouthWestToNorthEastBannerAngle());
+				new Size(0.08f, Sizing.RelativeToAverageSideLength), new TopLeftToBottomRightBannerAngle());
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
 			aspDoc.ApplyWatermarks(new[] { bannerWatermark });
