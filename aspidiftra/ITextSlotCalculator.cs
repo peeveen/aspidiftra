@@ -1,6 +1,6 @@
 ﻿namespace Aspidiftra
 {
-	internal interface ITextSlotCalculator
+	public interface ITextSlotCalculator
 	{
 		/// <summary>
 		///   For the given font size, calculate as many text slots as possible.

@@ -6,6 +6,10 @@ namespace Aspidiftra.Geometry
 	{
 		public Rectangle(double left, double bottom, double right, double top)
 		{
+			if (left > right)
+				throw new ArgumentException("Invalid rectangle: left >right.");
+			if (bottom > top)
+				throw new ArgumentException("Invalid rectangle: bottom > top.");
 			Left = left;
 			Bottom = bottom;
 			Top = top;
@@ -45,6 +49,11 @@ namespace Aspidiftra.Geometry
 
 		public Rectangle Deflate(double amount)
 		{
+			var amountTimesTwo = amount * 2.0;
+			if (amountTimesTwo > Width)
+				throw new ArgumentException($"Deflating the rectangle by {amount} would result in a negative width.");
+			if (amountTimesTwo > Height)
+				throw new ArgumentException($"Deflating the rectangle by {amount} would result in a negative height.");
 			return new Rectangle(Left + amount, Bottom + amount, Right - amount, Top - amount);
 		}
 

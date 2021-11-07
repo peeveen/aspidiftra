@@ -3,19 +3,21 @@ using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
-	internal class AssignedTextSlot
+	internal class AllocatedTextSlot
 	{
 		private readonly Justification _justification;
 
-		internal AssignedTextSlot(MeasuredString text, TextSlot slot, Justification justification)
+		internal AllocatedTextSlot(MeasuredString text, TextSlot slot, Justification justification)
 		{
 			Text = text;
 			Slot = slot;
 			_justification = justification;
+			TextFits = text.Length <= slot.Width;
 		}
 
 		internal MeasuredString Text { get; }
 		internal TextSlot Slot { get; }
+		internal bool TextFits { get; }
 
 		internal Offset JustificationOffset
 		{

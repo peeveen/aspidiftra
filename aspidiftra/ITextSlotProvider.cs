@@ -2,7 +2,7 @@
 
 namespace Aspidiftra
 {
-	internal interface ITextSlotProvider
+	public interface ITextSlotProvider
 	{
 		/// <summary>
 		///   Returns the text slots that should be used when positioning the

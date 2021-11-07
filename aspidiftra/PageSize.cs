@@ -11,13 +11,15 @@ namespace Aspidiftra
 
 		public PageSize ApplyMargin(double amount)
 		{
-			var newWidth = Width - amount * 2.0;
-			var newHeight = Height - amount * 2.0;
-			if (newWidth <= 0.0)
-				throw new MarginTooLargeException(amount, MarginTooLargeException.PageSide.Width, newWidth);
-			if (newHeight <= 0.0)
-				throw new MarginTooLargeException(amount, MarginTooLargeException.PageSide.Height, newHeight);
-			return new PageSize(newWidth, newHeight);
+			try
+			{
+				var newRect = Deflate(amount);
+				return new PageSize(newRect.Width, newRect.Height);
+			}
+			catch (ArgumentException ae)
+			{
+				throw new MarginTooLargeException(amount, ae);
+			}
 		}
 
 		/// <summary>
