@@ -144,19 +144,20 @@ namespace Aspidiftra
 						return GetPositionedTextCollection(allocatedTextSlots, fontSize);
 					}
 				}
-				catch (InsufficientSlotsException)
+				catch (InsufficientSlotsException insufficientSlotsException)
 				{
 					// There are not enough slots for the text.
 					// Wrapping lines will only make this worse.
 					// If we're not allowed to shrink the font size, then we are out of options, so
 					// the exception will just have to bubble up.
 					if (Fit.HasShrink())
-						// TODO: Make an estimate of shrink magnitude?
 						fontSize = ShrinkFontSize(fontSize, MinimumFontSizeDelta);
 					else
-						throw;
-					//var availableSlots = insufficientSlotsException.AvailableSlots;
-					//var requestedSlots = insufficientSlotsException.RequestedSlots;
+						throw new InsufficientSpaceException(insufficientSlotsException);
+				}
+				catch (CannotReduceFontSizeException cannotReduceFontSizeException)
+				{
+					throw new InsufficientSpaceException(cannotReduceFontSizeException);
 				}
 			}
 		}
