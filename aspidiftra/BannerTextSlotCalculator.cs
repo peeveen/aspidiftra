@@ -45,7 +45,7 @@ namespace Aspidiftra
 			// The algorithm for the odd/even slot calculations are identical ... the only difference is
 			// where the centre line starts. For odd, the line should be shunted off-centre by half of
 			// the font size.
-			var halfOffset = new Offset(offset.X / 2.0, offset.Y / 2.0);
+			var halfOffset = offset / 2.0;
 
 			// Let's do the calculations!
 			var pageLines = _pageSize.Lines.ToImmutableList();
@@ -68,7 +68,7 @@ namespace Aspidiftra
 				{
 					for (var f = offsetDirection;; f += offsetDirection)
 					{
-						var newOffset = new Offset(offset.X * f, offset.Y * f);
+						var newOffset = offset * f;
 						var newLine = new Line(textLine.Point + newOffset, textLine.Gradient);
 						var newTextSlot = CalculateSlot(newLine, offset, pageLines, slotHeight);
 						if (newTextSlot != null)

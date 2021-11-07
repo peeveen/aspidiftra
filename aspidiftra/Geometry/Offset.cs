@@ -12,5 +12,15 @@
 
 		public double X { get; }
 		public double Y { get; }
+
+		public static Offset operator /(Offset offset, double divider)
+		{
+			return new Offset(offset.X / divider, offset.Y / divider);
+		}
+
+		public static Offset operator *(Offset offset, double multiplier)
+		{
+			return new Offset(offset.X * multiplier, offset.Y * multiplier);
+		}
 	}
 }
