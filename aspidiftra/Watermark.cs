@@ -106,8 +106,7 @@ namespace Aspidiftra
 		internal PositionedTextCollection GetPositionedText(float fontSize, ITextSlotCalculator textSlotCalculator)
 		{
 			IImmutableList<string> originalStrings = AspidiftraUtil.SplitTextIntoLines(Text);
-			var fontSizeMeasurementsCache =
-				new TextPositionCalculator.FontSizeMeasurementsCache(Appearance.Font, textSlotCalculator);
+			var fontSizeMeasurementsCache = new FontSizeMeasurementsCache(Appearance.Font, textSlotCalculator);
 			IImmutableList<string> currentStrings = originalStrings;
 			for (;;)
 			{
