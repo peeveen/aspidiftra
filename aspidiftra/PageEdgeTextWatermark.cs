@@ -4,7 +4,7 @@ using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
-	public class PageEdgeWatermark : Watermark
+	public class PageEdgeTextWatermark : TextWatermark
 	{
 		private readonly Angle _angle;
 		private readonly PageEdgePosition _pageEdgePosition;
@@ -46,7 +46,7 @@ namespace Aspidiftra
 		///   mechanism in place to prevent page edge watermarks on different page
 		///   edges from overlapping.
 		/// </param>
-		public PageEdgeWatermark(string text, Appearance appearance, PageEdgePosition position,
+		public PageEdgeTextWatermark(string text, Appearance appearance, PageEdgePosition position,
 			Justification justification, Fitting fit, Size marginSize, bool reverseDirection = false,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null
 		) : base(text, appearance, justification, fit, marginSize, pageSelector)
@@ -65,7 +65,7 @@ namespace Aspidiftra
 			return new PageEdgeTextSlotCalculator(pageSize, _pageEdgePosition, _angle, _reverseDirection);
 		}
 
-		protected override Angle GetWatermarkAngle(PageSize pageSize)
+		protected override Angle GetAngle(PageSize pageSize)
 		{
 			return _angle;
 		}

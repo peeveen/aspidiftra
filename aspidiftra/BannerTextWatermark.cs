@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
-	public class BannerWatermark : Watermark
+	public class BannerTextWatermark : TextWatermark
 	{
 		private readonly IBannerAngle _angle;
 
@@ -43,20 +41,20 @@ namespace Aspidiftra
 		///   from a given set of page numbers. If no value is provided for this
 		///   parameter, <see cref="AspidiftraUtil.AllPagesSelector" /> will be used.
 		/// </param>
-		public BannerWatermark(string text, Appearance appearance, Justification justification,
+		public BannerTextWatermark(string text, Appearance appearance, Justification justification,
 			Fitting fit, Size marginSize, IBannerAngle angle,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
-			: base(text,appearance,justification,fit,marginSize,pageSelector)
+			: base(text, appearance, justification, fit, marginSize, pageSelector)
 		{
 			_angle = angle;
 		}
 
 		protected override ITextSlotCalculator GetTextSlotCalculator(PageSize pageSize)
 		{
-			return new BannerTextSlotCalculator(pageSize, GetWatermarkAngle(pageSize));
+			return new BannerTextSlotCalculator(pageSize, GetAngle(pageSize));
 		}
 
-		protected override Angle GetWatermarkAngle(PageSize pageSize)
+		protected override Angle GetAngle(PageSize pageSize)
 		{
 			return _angle.GetAngle(pageSize);
 		}

@@ -7,7 +7,7 @@ using Aspose.Pdf.Facades;
 
 namespace Aspidiftra
 {
-	public abstract class Watermark : IWatermark
+	public abstract class TextWatermark : IWatermark
 	{
 		// We will, at some point, be attempting to make some text fit better by increasing
 		// or reducing the font size. The amount that we will increase or reduce by will always
@@ -47,7 +47,7 @@ namespace Aspidiftra
 		/// <param name="fit">
 		///   Should the text be made smaller/larger/wrapped to fit the area?
 		/// </param>
-		protected Watermark(string text, Appearance appearance, Justification justification,
+		protected TextWatermark(string text, Appearance appearance, Justification justification,
 			Fitting fit, Size marginSize,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
 		{
@@ -96,12 +96,12 @@ namespace Aspidiftra
 				new FormattedText(txt.Text, Appearance.Color, Appearance.Font.Name, EncodingType.Winansi,
 					false, positionedText.FontSize)));
 
-			return new WatermarkElementCollection(elements, GetWatermarkAngle(pageSize), Appearance.IsBackground);
+			return new WatermarkElementCollection(elements, GetAngle(pageSize), Appearance.IsBackground);
 		}
 
 		protected abstract ITextSlotCalculator GetTextSlotCalculator(PageSize pageSize);
 
-		protected abstract Angle GetWatermarkAngle(PageSize pageSize);
+		protected abstract Angle GetAngle(PageSize pageSize);
 
 		internal PositionedTextCollection GetPositionedText(float fontSize, ITextSlotCalculator textSlotCalculator)
 		{

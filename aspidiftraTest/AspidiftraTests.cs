@@ -147,7 +147,7 @@ namespace AspidiftraTest
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "PageEdgeWatermarked.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Red, 0.6f, watermarkFont);
-			var pageEdgeWatermark = new PageEdgeWatermark(
+			var pageEdgeWatermark = new PageEdgeTextWatermark(
 				"This is a page edge watermark test that I hope will execute successfully.",
 				watermarkAppearance,
 				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
@@ -168,7 +168,7 @@ namespace AspidiftraTest
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "BannerWatermarked.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Regular, new Size(.035f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Green, 0.6f, watermarkFont);
-			var bannerWatermark = new BannerWatermark(
+			var bannerWatermark = new BannerTextWatermark(
 				"This is a banner watermark test that I sincerely hope will execute successfully, mainly because the maths involved was bloody difficult.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.08f, Sizing.RelativeToAverageSideLength),
