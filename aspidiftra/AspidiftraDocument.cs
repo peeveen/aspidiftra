@@ -28,8 +28,8 @@ namespace Aspidiftra
 			// We don't want to have to do that for every page, especially when most PDFs just contain
 			// pages that are all the same size.
 			// So we "group" the pages by size, and later, we can ask the watermark to calculate
-			// its positions for each unique page size, then apply those positions to all the
-			// pages that share that size.
+			// its positions for each group, then apply those positions to all the pages that share
+			// that size.
 			_pagesBySize = document.Pages
 				.GroupBy(GetNormalizedPageSize, page => page.Number)
 				.ToImmutableDictionary(grouping => grouping.Key, grouping => grouping.ToImmutableList());

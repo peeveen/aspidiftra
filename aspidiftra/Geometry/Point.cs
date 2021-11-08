@@ -6,6 +6,8 @@ namespace Aspidiftra.Geometry
 	{
 		public Point(double x, double y)
 		{
+			GeometryUtil.ValidateGeometricValue(x, nameof(x));
+			GeometryUtil.ValidateGeometricValue(y, nameof(y));
 			X = x;
 			Y = y;
 		}

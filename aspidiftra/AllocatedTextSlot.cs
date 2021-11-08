@@ -3,6 +3,9 @@ using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   A text slot that has had a string allocated to it.
+	/// </summary>
 	internal class AllocatedTextSlot
 	{
 		private readonly Justification _justification;
@@ -26,17 +29,14 @@ namespace Aspidiftra
 				var leftJustifiedAlready = Slot.Angle < Angle.RadiansPi;
 				var rightJustifiedAlready = Slot.Angle >= Angle.RadiansPi;
 				var spareSlotSpace = Slot.Width - Text.Length;
+				var offsetMultiplier = _justification == Justification.Centre ? 0.5 : 1.0;
 				return _justification switch
 				{
 					Justification.Left when leftJustifiedAlready => Offset.None,
 					Justification.Right when rightJustifiedAlready => Offset.None,
-					Justification.Centre =>
-						new Offset(Math.Abs(spareSlotSpace / 2.0 * Slot.Angle.Cos),
-							Math.Abs(spareSlotSpace / 2.0 * Slot.Angle.Sin)),
 					_ =>
-						// Due to the angle, text is appearing left or right justified by default,
-						// but we want it the opposite way.
-						new Offset(Math.Abs(spareSlotSpace * Slot.Angle.Cos), Math.Abs(spareSlotSpace * Slot.Angle.Sin))
+						new Offset(Math.Abs(spareSlotSpace * Slot.Angle.Cos), Math.Abs(spareSlotSpace * Slot.Angle.Sin)) *
+						offsetMultiplier
 				};
 			}
 		}

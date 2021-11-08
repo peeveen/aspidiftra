@@ -3,9 +3,8 @@
 namespace Aspidiftra
 {
 	/// <summary>
-	///   Exception that is thrown when a request is made to perform an operation (such
-	///   as text position, slot calculation, whatever) where there is not enough space
-	///   on the page.
+	///   Exception that is thrown when we want to show N lines of text, but
+	///   there fewer than N text slots available.
 	/// </summary>
 	public class InsufficientSlotsException : Exception
 	{

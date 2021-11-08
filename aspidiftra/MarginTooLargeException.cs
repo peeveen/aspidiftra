@@ -2,6 +2,10 @@
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   Exception that is thrown when the requested margin size is greater than half of the
+	///   page width or height.
+	/// </summary>
 	public class MarginTooLargeException : Exception
 	{
 		public MarginTooLargeException(double marginSize, Exception innerException) : base(

@@ -6,8 +6,12 @@ namespace Aspidiftra.Geometry
 	{
 		public Rectangle(double left, double bottom, double right, double top)
 		{
+			GeometryUtil.ValidateGeometricValue(left, nameof(left));
+			GeometryUtil.ValidateGeometricValue(right, nameof(right));
+			GeometryUtil.ValidateGeometricValue(top, nameof(top));
+			GeometryUtil.ValidateGeometricValue(bottom, nameof(bottom));
 			if (left > right)
-				throw new ArgumentException("Invalid rectangle: left >right.");
+				throw new ArgumentException("Invalid rectangle: left > right.");
 			if (bottom > top)
 				throw new ArgumentException("Invalid rectangle: bottom > top.");
 			Left = left;
@@ -26,10 +30,6 @@ namespace Aspidiftra.Geometry
 				new Line(TopRight, 0.0),
 				new Line(TopRight, double.PositiveInfinity)
 			};
-		}
-
-		public Rectangle(Rectangle rectangle) : this(rectangle.Left, rectangle.Bottom, rectangle.Right, rectangle.Top)
-		{
 		}
 
 		public Rectangle(Aspose.Pdf.Rectangle rectangle) : this(rectangle.LLX, rectangle.LLY, rectangle.URX, rectangle.URY)
@@ -55,11 +55,6 @@ namespace Aspidiftra.Geometry
 			if (amountTimesTwo > Height)
 				throw new ArgumentException($"Deflating the rectangle by {amount} would result in a negative height.");
 			return new Rectangle(Left + amount, Bottom + amount, Right - amount, Top - amount);
-		}
-
-		public Rectangle Inflate(double amount)
-		{
-			return Deflate(-amount);
 		}
 
 		public double DiagonalLength()

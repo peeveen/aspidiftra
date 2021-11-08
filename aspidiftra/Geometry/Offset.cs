@@ -1,4 +1,6 @@
-﻿namespace Aspidiftra.Geometry
+﻿using System;
+
+namespace Aspidiftra.Geometry
 {
 	public class Offset
 	{
@@ -6,6 +8,8 @@
 
 		public Offset(double x, double y)
 		{
+			GeometryUtil.ValidateGeometricValue(x, nameof(x));
+			GeometryUtil.ValidateGeometricValue(y, nameof(y));
 			X = x;
 			Y = y;
 		}

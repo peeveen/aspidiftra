@@ -50,6 +50,7 @@ namespace Aspidiftra.Geometry
 		/// <param name="angleUnits">Units of the angle (degrees or radians). See <see cref="AngleUnits" /></param>
 		public Angle(double value, AngleUnits angleUnits)
 		{
+			GeometryUtil.ValidateGeometricValue(value, nameof(value));
 			Units = angleUnits;
 			// Create a couple of handy constants, depending on the units.
 			_halfCircle = Units == AngleUnits.Degrees ? 180.0 : Math.PI;
