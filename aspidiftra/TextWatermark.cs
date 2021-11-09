@@ -7,6 +7,9 @@ using Aspose.Pdf.Facades;
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   Base class for text watermarks.
+	/// </summary>
 	public abstract class TextWatermark : IWatermark
 	{
 		// We will, at some point, be attempting to make some text fit better by increasing
@@ -26,7 +29,7 @@ namespace Aspidiftra
 		protected readonly string Text;
 
 		/// <summary>
-		///   Base class for watermarks.
+		///   Constructor.
 		/// </summary>
 		/// <param name="text">
 		///   Text to show.
@@ -53,9 +56,6 @@ namespace Aspidiftra
 		{
 			Text = text;
 			Fit = fit;
-			if (Fit.HasWrap() && Text.Contains('\n') && Text.Contains("\r\n"))
-				throw new ArgumentException(
-					$"Cannot use {nameof(Fitting.Wrap)} when rendering watermark text that already contains explicit line breaks.");
 			Appearance = appearance;
 			MarginSize = marginSize;
 			Justification = justification;
@@ -63,14 +63,27 @@ namespace Aspidiftra
 			_pageSelector = pageSelector ?? AspidiftraUtil.AllPagesSelector;
 		}
 
+		/// <summary>
+		///   How opaque the watermark should be.
+		/// </summary>
 		public float Opacity => Appearance.Opacity;
 
+		/// <summary>
+		///   What pages should the watermark apply to?
+		/// </summary>
+		/// <param name="availablePageNumbers">All available page numbers.</param>
+		/// <returns>Subset of page numbers to apply the watermark to.</returns>
 		public IImmutableSet<int> GetApplicablePageNumbers(IImmutableSet<int> availablePageNumbers)
 		{
 			return _pageSelector(availablePageNumbers);
 		}
 
-		public WatermarkElementCollection GetWatermarkElements(PageSize pageSize)
+		/// <summary>
+		///   Calculate the elements that make up this watermark for the given page size.
+		/// </summary>
+		/// <param name="pageSize">Page size.</param>
+		/// <returns>Watermark elements to render.</returns>
+		public TextWatermarkElementCollection GetWatermarkElements(PageSize pageSize)
 		{
 			// Get the initial requested font size. This may change,
 			// depending on the value of _fit.
@@ -91,32 +104,50 @@ namespace Aspidiftra
 			// We can now convert those calculated text positions to watermark elements.
 			// All calculated coordinates from the TextPositionCalculator will be for a page size
 			// without the margins. We need to reapply the margin offset here.
-			var elements = positionedText.Select(txt => new WatermarkElement(
+			var elements = positionedText.Select(txt => new TextWatermarkElement(
 				txt.Position + new Offset(effectiveMarginSize, effectiveMarginSize),
 				new FormattedText(txt.Text, Appearance.Color, Appearance.Font.Name, EncodingType.Winansi,
 					false, positionedText.FontSize)));
 
-			return new WatermarkElementCollection(elements, GetAngle(pageSize), Appearance.IsBackground);
+			return new TextWatermarkElementCollection(elements, GetAngle(pageSize), Appearance.IsBackground);
 		}
 
+		/// <summary>
+		///   Gets the text slot calculator for this type of watermark.
+		/// </summary>
+		/// <param name="pageSize">Page size.</param>
+		/// <returns>Suitable text slot calculator.</returns>
 		protected abstract ITextSlotCalculator GetTextSlotCalculator(PageSize pageSize);
 
+		/// <summary>
+		///   Gets the angle for this type of watermark.
+		/// </summary>
+		/// <param name="pageSize">Page size.</param>
+		/// <returns>Angle for this watermark.</returns>
 		protected abstract Angle GetAngle(PageSize pageSize);
 
-		internal PositionedTextCollection GetPositionedText(float fontSize, ITextSlotCalculator textSlotCalculator)
+		/// <summary>
+		///   Gets the positioned text elements for this watermark.
+		/// </summary>
+		/// <param name="fontSize">Current font size.</param>
+		/// <param name="textSlotCalculator">The text slot calculator for this type of watermark.</param>
+		/// <returns>The positioned text collection.</returns>
+		private PositionedTextCollection GetPositionedText(float fontSize, ITextSlotCalculator textSlotCalculator)
 		{
-			IImmutableList<string> originalStrings = AspidiftraUtil.SplitTextIntoLines(Text);
+			var textTokens = new StringTokenCollection(Text);
+			IImmutableList<string> currentStrings = textTokens.GetStrings().ToImmutableList();
+
 			var fontSizeMeasurementsCache = new FontSizeMeasurementsCache(Appearance.Font, textSlotCalculator);
-			IImmutableList<string> currentStrings = originalStrings;
 			for (;;)
 			{
 				var fontSizeMeasurements = fontSizeMeasurementsCache.GetMeasurements(fontSize);
-				IReadOnlyList<MeasuredString> measuredStrings =
-					fontSizeMeasurements.MeasureStrings(currentStrings).ToImmutableList();
 				try
 				{
-					IImmutableList<TextSlot> slots = fontSizeMeasurements.TextSlotProvider.GetTextSlots(measuredStrings.Count)
+					IImmutableList<TextSlot> slots = fontSizeMeasurements.TextSlotProvider.GetTextSlots(currentStrings.Count)
 						.ToImmutableList();
+
+					IReadOnlyList<MeasuredString> measuredStrings =
+						fontSizeMeasurements.MeasureStrings(currentStrings).ToImmutableList();
 
 					IImmutableList<AllocatedTextSlot> allocatedTextSlots =
 						measuredStrings.Zip(slots, (str, slot) => new AllocatedTextSlot(str, slot, Justification))
@@ -127,10 +158,18 @@ namespace Aspidiftra
 					if (notAllStringsFit)
 					{
 						if (Fit.HasWrap())
-							// Split the text to fit the slots. This might result in an extra line of text, but
-							// if that happens, we'll just loop round to the next iteration and it will calculate
-							// extra slots.
-							currentStrings = fontSizeMeasurements.SplitTextForSlots(originalStrings.First(), slots);
+							try
+							{
+								// Split the text to fit the slots.
+								currentStrings = fontSizeMeasurements.SplitTextForSlots(textTokens, slots);
+							}
+							catch (SplitTextForSlotsOverflowException splitTextForSlotsOverflowException)
+							{
+								// There is too much text to fit the original number of slots. Re-iterate, and
+								// we will request additional slots.
+								currentStrings = splitTextForSlotsOverflowException.SplitStrings;
+								currentStrings = currentStrings.AddRange(splitTextForSlotsOverflowException.OverflowTokens.GetStrings());
+							}
 						else if (Fit.HasShrink())
 							// TODO: Make an estimate of shrink magnitude?
 							fontSize = ShrinkFontSize(fontSize, MinimumFontSizeDelta);
@@ -143,6 +182,16 @@ namespace Aspidiftra
 						// If we didn't split any strings, and no shrinking is required, then we can return what we have.
 						return GetPositionedTextCollection(allocatedTextSlots, fontSize);
 					}
+				}
+				catch (CannotSplitTextException cannotSplitTextException)
+				{
+					// A line of text cannot be split at a suitable point.
+					// If we're not allowed to shrink the font size, then we are out of options, so
+					// the exception will just have to bubble up.
+					if (Fit.HasShrink())
+						fontSize = ShrinkFontSize(fontSize, MinimumFontSizeDelta);
+					else
+						throw new InsufficientSpaceException(cannotSplitTextException);
 				}
 				catch (InsufficientSlotsException insufficientSlotsException)
 				{
@@ -162,6 +211,15 @@ namespace Aspidiftra
 			}
 		}
 
+		/// <summary>
+		///   Reduces the given font size by the given amount.
+		/// </summary>
+		/// <param name="fontSize">
+		///   Font size to reduce. If this is <see cref="MinimumFontSize" />, then a
+		///   <see cref="CannotReduceFontSizeException" /> exception will be thrown.
+		/// </param>
+		/// <param name="shrinkAmount">Amount to reduce it by.</param>
+		/// <returns>Reduced font size. It will never be reduced below <see cref="MinimumFontSize" />."/></returns>
 		private static float ShrinkFontSize(float fontSize, float shrinkAmount)
 		{
 			if (Math.Abs(fontSize - MinimumFontSize) < float.Epsilon)
@@ -172,15 +230,22 @@ namespace Aspidiftra
 			return fontSize;
 		}
 
-		private static PositionedTextCollection GetPositionedTextCollection(IEnumerable<AllocatedTextSlot> assignedSlots,
+		/// <summary>
+		///   Utility function for converting a list of <see cref="AllocatedTextSlot" />s into a
+		///   <see cref="PositionedTextCollection" />.
+		/// </summary>
+		/// <param name="allocatedSlots">The allocated text slots.</param>
+		/// <param name="fontSize">The current font size.</param>
+		/// <returns>A positioned text collection.</returns>
+		private static PositionedTextCollection GetPositionedTextCollection(IEnumerable<AllocatedTextSlot> allocatedSlots,
 			float fontSize)
 		{
-			var positionedText = assignedSlots.Select(assignedSlot =>
+			var positionedText = allocatedSlots.Select(allocatedSlot =>
 			{
-				var slotText = assignedSlot.Text;
-				var slot = assignedSlot.Slot;
+				var slotText = allocatedSlot.Text;
+				var slot = allocatedSlot.Slot;
 				var textOrigin = slot.EffectiveTextOrigin;
-				var justifiedTextOrigin = textOrigin + assignedSlot.JustificationOffset;
+				var justifiedTextOrigin = textOrigin + allocatedSlot.JustificationOffset;
 				return new PositionedText(slotText.Text, justifiedTextOrigin);
 			});
 			return new PositionedTextCollection(positionedText, fontSize);

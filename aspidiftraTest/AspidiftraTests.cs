@@ -79,6 +79,20 @@ namespace AspidiftraTest
 
 		[Test]
 		[Order(0)]
+		public void TextSplitTest()
+		{
+			// ReSharper disable line StringLiteralTypo
+			var splitTestText = "   This is a     tést of\nthe sssssssssssssstring   splitting code\n\n  .";
+			var tokens = new StringTokenCollection(splitTestText).ToList();
+			Assert.AreEqual(22, tokens.Count);
+			var eleventhToken = tokens[10];
+			var fifteenthToken = tokens[14];
+			Assert.IsTrue(eleventhToken.String == "\n" && eleventhToken.Type == StringToken.TokenType.LineBreak);
+			Assert.IsTrue(fifteenthToken.String == "   " && fifteenthToken.Type == StringToken.TokenType.Whitespace);
+		}
+
+		[Test]
+		[Order(0)]
 		public void AngleTests()
 		{
 			Assert.AreEqual(Angle.Degrees180, Angle.RadiansPi);
@@ -121,8 +135,8 @@ namespace AspidiftraTest
 			Assert.AreEqual(Math.Sqrt(rectWidth * rectWidth + rectHeight * rectHeight), rect.DiagonalLength(),
 				GeometricTolerance);
 			Assert.AreEqual(rectWidth + rectHeight / 2.0, rect.AverageSideLength(), GeometricTolerance);
-			Assert.AreEqual(rectHeight, rect.LongestSideLength());
-			Assert.AreEqual(rectWidth, rect.ShortestSideLength());
+			Assert.AreEqual(rectHeight, rect.LongerSideLength());
+			Assert.AreEqual(rectWidth, rect.ShorterSideLength());
 			Assert.AreEqual(diagonalAngleRadians, new PageSize(rect.Width, rect.Height).BottomLeftToTopRightAngle());
 		}
 
@@ -148,13 +162,13 @@ namespace AspidiftraTest
 			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Red, 0.6f, watermarkFont);
 			var pageEdgeWatermark = new PageEdgeTextWatermark(
-				"This is a page edge watermark test that I hope will execute successfully.",
+				"This is a page edge watermark test that I hope\nwill execute successfully.",
 				watermarkAppearance,
 				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
-			aspDoc.ApplyWatermarks(new[] {pageEdgeWatermark});
+			aspDoc.ApplyWatermark(pageEdgeWatermark);
 			aspDoc.Save(outputPdfPath);
 
 			// TODO: Test the output, somehow?
@@ -169,13 +183,13 @@ namespace AspidiftraTest
 			var watermarkFont = new Font("Helvetica", FontStyles.Regular, new Size(.035f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Green, 0.6f, watermarkFont);
 			var bannerWatermark = new BannerTextWatermark(
-				"This is a banner watermark test that I sincerely hope will execute successfully, mainly because the maths involved was bloody difficult.",
+				"This is a banner watermark test that I sincerely hope\nwill execute successfully, mainly because the maths involved was bloody difficult.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.08f, Sizing.RelativeToAverageSideLength),
 				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
 
 			using var aspDoc = new AspidiftraDocument(testPdfPath);
-			aspDoc.ApplyWatermarks(new[] {bannerWatermark});
+			aspDoc.ApplyWatermark(bannerWatermark);
 			aspDoc.Save(outputPdfPath);
 
 			// TODO: Test the output, somehow?

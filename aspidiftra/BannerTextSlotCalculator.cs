@@ -6,12 +6,32 @@ using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   Object responsible for calculating the positions of banner text slots.
+	/// </summary>
 	internal class BannerTextSlotCalculator : ITextSlotCalculator
 	{
+		/// <summary>
+		///   Angle of the banner.
+		/// </summary>
 		private readonly Angle _angle;
+
+		/// <summary>
+		///   Size of the page that we are putting the banner on.
+		/// </summary>
 		private readonly PageSize _pageSize;
+
+		/// <summary>
+		///   Reverse of the desired banner angle. Calculated and stored here for
+		///   efficiency.
+		/// </summary>
 		private readonly Angle _reversedAngle;
 
+		/// <summary>
+		///   Constructor.
+		/// </summary>
+		/// <param name="pageSize">Size of the page that the banner will be on.</param>
+		/// <param name="angle">Desired angle of banner.</param>
 		internal BannerTextSlotCalculator(PageSize pageSize, Angle angle)
 		{
 			_pageSize = pageSize;
@@ -19,6 +39,11 @@ namespace Aspidiftra
 			_reversedAngle = angle.Reverse();
 		}
 
+		/// <summary>
+		///   Calculates the position of all possible text slots for the given font size.
+		/// </summary>
+		/// <param name="fontSize">Font size.</param>
+		/// <returns>A text slot provider, loaded with all the calculated slot positions.</returns>
 		public ITextSlotProvider CalculateSlots(float fontSize)
 		{
 			// OK, here's where the party is.
@@ -47,23 +72,45 @@ namespace Aspidiftra
 			// the font size.
 			var halfOffset = offset / 2.0;
 
-			// Let's do the calculations!
+			// Calculation involves finding the intersection points between the angled center line, and
+			// the page edges, which are represented by four Line objects here.
 			var pageLines = _pageSize.Lines.ToImmutableList();
+
+			// Let's do the calculations!
+			// Get the even slots.
 			var evenSlots = CalculateSlots(angledCenterLine, offset, pageLines, fontSize);
+
+			// Get the odd slots.
 			var oddStartLine = new Line(angledCenterLine.Point - halfOffset, angledCenterLine.Gradient);
 			var oddSlots = CalculateSlots(oddStartLine, offset, pageLines, fontSize);
+
+			// Return our special provider, loaded with both even and odd slot collections.
 			return new BannerTextSlotProvider(oddSlots, evenSlots);
 		}
 
+		/// <summary>
+		///   Calculates all the possible text slots.
+		/// </summary>
+		/// <param name="textLine">Starting text line.</param>
+		/// <param name="offset">Amount to offset the text line by for each slot.</param>
+		/// <param name="pageLines">Line that define the page edges.</param>
+		/// <param name="slotHeight">How "tall" each slot should be (currently font size, really).</param>
+		/// <returns>Collection of calculated text slots.</returns>
 		private ImmutableList<TextSlot> CalculateSlots(Line textLine, Offset offset, IImmutableList<Line> pageLines,
 			double slotHeight)
 		{
 			var slots = new List<TextSlot>();
+			// We start by calculating the slot that is "on" the given text line.
 			var initialSlot = CalculateSlot(textLine, offset, pageLines, slotHeight);
 			if (initialSlot != null)
 			{
+				// Add the initial slot to the collection.
 				slots.Add(initialSlot);
 
+				// This function will repeatedly move the text line by the offset until
+				// it is no longer in a position that is viable for a text slot.
+				// The offsetDirection parameter will be 1 or -1 to indicate what
+				// "direction" we will offset the line by each time.
 				void CalculateOffsetSlots(int offsetDirection)
 				{
 					for (var f = offsetDirection;; f += offsetDirection)
@@ -78,18 +125,28 @@ namespace Aspidiftra
 					}
 				}
 
+				// Calculate the slots in the "upwards" direction (whatever
+				// the angle defines "up" as!).
 				CalculateOffsetSlots(1);
-				// Slots have been added from the centre of the page "upwards" (whatever
-				// the angle defines "up" as). This is the wrong order, so we reverse
-				// them now. The next call to CalculateOffsetSlots will add them from
-				// the middle "downwards", which is okay.
+				// Slots have been added from the centre of the page "upwards".
+				// This is the wrong order, so we reverse them now. 
 				slots.Reverse();
+				// This next call to CalculateOffsetSlots will add them from the
+				// middle "downwards", which is okay.
 				CalculateOffsetSlots(-1);
 			}
 
 			return slots.ToImmutableList();
 		}
 
+		/// <summary>
+		/// Calculates a text slot on the given line.
+		/// </summary>
+		/// <param name="textLine">Line that the resulting text slot must be on.</param>
+		/// <param name="offset">The current text line offset.</param>
+		/// <param name="pageLines">Lines that define the page edges.</param>
+		/// <param name="slotHeight">How "tall" each slot should be (currently font size, really).</param>
+		/// <returns>The text slot for the given line, or null if no text slot can fit on this line.</returns>
 		private TextSlot? CalculateSlot(Line textLine, Offset offset, IImmutableList<Line> pageLines, double slotHeight)
 		{
 			// Find where the text line crosses the page edges.

@@ -1,5 +1,8 @@
 ﻿namespace Aspidiftra
 {
+	/// <summary>
+	///   Enumeration of possible watermark text justification values.
+	/// </summary>
 	public enum Justification
 	{
 		/// <summary>

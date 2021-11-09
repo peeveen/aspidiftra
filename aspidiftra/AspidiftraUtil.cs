@@ -8,19 +8,6 @@ namespace Aspidiftra
 {
 	public static class AspidiftraUtil
 	{
-		/// <summary>
-		///   Acceptable amount to be "off by" for floating point operations.
-		/// </summary>
-		internal const double GeometricTolerance = 0.0000001;
-
-		public static IImmutableList<string> SplitTextIntoLines(string text)
-		{
-			// Platform neuter the text, with regard to newlines.
-			text = text.Replace("\r\n", "\n");
-			var lines = text.Split('\n').Select(line => line.Trim());
-			return lines.ToImmutableList();
-		}
-
 		internal static IImmutableSet<int> AllPagesSelector(IImmutableSet<int> pages)
 		{
 			return pages;

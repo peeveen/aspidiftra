@@ -2,8 +2,16 @@
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   Interface for an object describing the angle of a banner watermark.
+	/// </summary>
 	public interface IBannerAngle
 	{
+		/// <summary>
+		///   Calculates the effective angle of the banner watermark.
+		/// </summary>
+		/// <param name="pageSize">Size of the page that the banner will be on.</param>
+		/// <returns>Angle of banner.</returns>
 		Angle GetAngle(PageSize pageSize);
 	}
 

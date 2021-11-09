@@ -9,7 +9,7 @@
 		///   internal caching.
 		/// </summary>
 		/// <param name="fontSize">Font size to calculate the slots for.</param>
-		/// <returns>All the text slots that can fit on the page.</returns>
+		/// <returns>An object describing all the text slots that can fit on the page.</returns>
 		ITextSlotProvider CalculateSlots(float fontSize);
 	}
 }

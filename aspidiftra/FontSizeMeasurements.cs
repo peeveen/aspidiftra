@@ -1,17 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   A cache of measurements relating to a specific font and font size.
+	///   The things that are cached are calculated text slots, and string widths.
+	///   We cache these because, during watermark fitting, it is possible that
+	///   the font size might be increased and reduced many times gradually, and we
+	///   don't want to have to calculate the same text slots and string widths all
+	///   over again.
+	/// </summary>
 	internal class FontSizeMeasurements
 	{
 		private readonly Font _font;
 		private readonly float _fontSize;
-		private readonly IDictionary<string, double> _stringMeasurements = new Dictionary<string, double>();
+		private readonly IDictionary<string, MeasuredString> _stringMeasurements = new Dictionary<string, MeasuredString>();
 
+		/// <summary>
+		///   Constructor.
+		/// </summary>
+		/// <param name="font">Font that the watermark is being rendered with.</param>
+		/// <param name="fontSize">Specific size of the font that this item will be measuring.</param>
+		/// <param name="textSlotProvider">Current text slot provider.</param>
 		internal FontSizeMeasurements(Font font, float fontSize, ITextSlotProvider textSlotProvider)
 		{
 			_font = font;
@@ -19,76 +32,114 @@ namespace Aspidiftra
 			TextSlotProvider = textSlotProvider;
 		}
 
+		/// <summary>
+		///   The text slot provider, loaded with the slots that were calculated specifically for the
+		///   font size that this set of measurements is for.
+		/// </summary>
 		internal ITextSlotProvider TextSlotProvider { get; }
 
+		/// <summary>
+		///   Measures the given string.
+		/// </summary>
+		/// <param name="text">String to measure.</param>
+		/// <returns>A <see cref="MeasuredString" /> object.</returns>
 		internal MeasuredString MeasureString(string text)
 		{
-			if (!_stringMeasurements.TryGetValue(text, out var size))
+			if (!_stringMeasurements.TryGetValue(text, out var measuredString))
 			{
-				size = _font.MeasureString(text, _fontSize);
-				_stringMeasurements[text] = size;
+				var width = _font.MeasureString(text, _fontSize);
+				measuredString = _stringMeasurements[text] = new MeasuredString(text, width);
 			}
 
-			return new MeasuredString(text, size);
+			return measuredString;
 		}
 
-		internal IEnumerable<MeasuredString> MeasureStrings(IEnumerable<string> strings)
+		/// <summary>
+		///   Measures the given strings.
+		/// </summary>
+		/// <param name="text">Strings to measure.</param>
+		/// <returns>A collection of <see cref="MeasuredString" /> objects.</returns>
+		internal IEnumerable<MeasuredString> MeasureStrings(IEnumerable<string> text)
 		{
-			return strings.Select(MeasureString);
+			return text.Select(MeasureString);
 		}
 
-		internal IImmutableList<string> SplitTextForSlots(string text, IEnumerable<TextSlot> slots)
+		/// <summary>
+		///   Splits the given text tokens into lines that fit the given slots. If, after splitting
+		///   the text to fit the slots, there is leftover text, a <see cref="SplitTextForSlotsOverflowException" />
+		///   exception will be thrown.
+		/// </summary>
+		/// <param name="tokens">String tokens to build into lines.</param>
+		/// <param name="slots">Slots that we want the text to fit.</param>
+		/// <returns>
+		///   List of strings that fit the given slots.
+		/// </returns>
+		internal IImmutableList<string> SplitTextForSlots(StringTokenCollection tokens, IEnumerable<TextSlot> slots)
 		{
-			var words = text.Split(' ', '\t').ToList();
 			var splitStrings = new List<string>();
 			foreach (var slot in slots)
 			{
 				var availableSpace = slot.Width;
-				var currentString = new StringBuilder();
-				var wordCount = 0;
-				while (words.Any())
-				{
-					var lastString = currentString.ToString();
-					var word = words[0];
-					words.RemoveAt(0);
-					if (wordCount++ > 0)
-						currentString.Append(' ');
-					currentString.Append(word);
+				var stringBuilder = new StringBuilder();
+				var contentCount = 0;
 
-					var measuredString = MeasureString(currentString.ToString());
-					if (measuredString.Length > availableSpace)
+				void AddLine(string line)
+				{
+					splitStrings.Add(line);
+					stringBuilder = new StringBuilder();
+					contentCount = 0;
+				}
+
+				tokens = tokens.StripLeadingWhitespace();
+
+				while (tokens.Any())
+				{
+					var lastString = stringBuilder.ToString();
+					var (content, remainder) = tokens.GetNextContent();
+
+					if (content.Count()==1 && content.First().Type == StringToken.TokenType.LineBreak)
 					{
-						// The last word we added to the current string has made it too long.
-						if (wordCount == 1)
-							// If it was the first word we added, then oops! It's a single
-							// word that's too big for the slot. Chuck an exception.
-							throw new CannotSplitTextException(text);
-						// Otherwise, use what we had before we added that word, put
-						// that word back into the word bag, and move onto the next slot.
-						splitStrings.Add(lastString);
-						words.Insert(0, word);
-						break;
+						AddLine(stringBuilder.ToString());
+					}
+					else
+					{
+						// Content is guaranteed to only contain one line's worth of tokens.
+						var contentString = content.ToString();
+						stringBuilder.Append(contentString);
+						++contentCount;
+
+						var measuredString = MeasureString(stringBuilder.ToString());
+						if (measuredString.Length > availableSpace)
+						{
+							// The last bit of content we added to the current string has made
+							// it too long.
+							if (contentCount == 1)
+								// If it was the first bit of content we added, then oops!
+								// It's a single word that's too big for the slot. Chuck an
+								// exception. (it's guaranteed not to have been a whitespace
+								// token).
+								throw new CannotSplitTextException(contentString);
+							// Otherwise, use what we had before we added that word, put
+							// that word back into the word bag, and move onto the next slot.
+							AddLine(lastString);
+							break;
+						}
 					}
 
-					if (!words.Any())
+					if (!remainder.Any())
 						// We've run out of words, and we haven't exceeded the slot width.
 						// So use what we've built so far.
-						splitStrings.Add(measuredString.Text);
+						AddLine(stringBuilder.ToString());
+					tokens = remainder;
 				}
 			}
 
-			// If there are still words left over, we just return them as one big
-			// string.
-			if (words.Any())
-				splitStrings.Add(string.Join(' ', words));
-			return splitStrings.ToImmutableList();
-		}
+			var resultsList = splitStrings.ToImmutableList();
 
-		internal class CannotSplitTextException : Exception
-		{
-			internal CannotSplitTextException(string text) : base($"Could not split the text '{text}' across multiple lines.")
-			{
-			}
+			// If there are still words left over, chuck an exception.
+			if (tokens.Any())
+				throw new SplitTextForSlotsOverflowException(resultsList, tokens);
+			return resultsList;
 		}
 	}
 }

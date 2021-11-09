@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace Aspidiftra
 {
+	/// <summary>
+	/// Flags that can be used to specify how a watermark should fit the page.
+	/// These can be combined with a bitwise OR.
+	/// </summary>
 	[Flags]
 	public enum Fitting
 	{
@@ -42,11 +46,6 @@ namespace Aspidiftra
 
 	public static class FittingExtensions
 	{
-		public static Fitting Normalize(this Fitting fitting, IEnumerable<string> text)
-		{
-			return text.Count() > 1 ? fitting.Remove(Fitting.Wrap) : fitting;
-		}
-
 		public static bool Has(this Fitting fitting, Fitting check)
 		{
 			return (fitting & check) == check;
@@ -67,9 +66,9 @@ namespace Aspidiftra
 			return fitting.Has(Fitting.Grow);
 		}
 
-		public static Fitting Remove(this Fitting fitting, Fitting flagToRemove)
+		public static Fitting Remove(this Fitting fitting, Fitting flagsToRemove)
 		{
-			return fitting & ~flagToRemove;
+			return fitting & ~flagsToRemove;
 		}
 	}
 }

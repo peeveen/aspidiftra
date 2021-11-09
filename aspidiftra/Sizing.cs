@@ -1,5 +1,8 @@
 ﻿namespace Aspidiftra
 {
+	/// <summary>
+	///   Enumeration of ways to interpret a size value.
+	/// </summary>
 	public enum Sizing
 	{
 		/// <summary>
@@ -30,16 +33,23 @@
 		/// <summary>
 		///   Size is a percentage of the shortest side of the page.
 		/// </summary>
-		RelativeToShortestSide,
+		RelativeToShorterSide,
 
 		/// <summary>
 		///   Size is a percentage of the longest side of the page.
 		/// </summary>
-		RelativeToLongestSide
+		RelativeToLongerSide
 	}
 
 	public static class SizingExtensions
 	{
+		/// <summary>
+		///   Returns the value that should be multiplied by a size value to
+		///   obtain the effective size, relative to a given page size.
+		/// </summary>
+		/// <param name="sizing">The type of sizing.</param>
+		/// <param name="pageSize">The page size.</param>
+		/// <returns>The relevant sizing factor.</returns>
 		public static double GetSizingFactor(this Sizing sizing, PageSize pageSize)
 		{
 			return sizing switch
@@ -48,8 +58,8 @@
 				Sizing.RelativeToHeight => pageSize.Height,
 				Sizing.RelativeToAverageSideLength => pageSize.AverageSideLength(),
 				Sizing.RelativeToDiagonalSize => pageSize.DiagonalLength(),
-				Sizing.RelativeToShortestSide => pageSize.ShortestSideLength(),
-				Sizing.RelativeToLongestSide => pageSize.LongestSideLength(),
+				Sizing.RelativeToShorterSide => pageSize.ShorterSideLength(),
+				Sizing.RelativeToLongerSide => pageSize.LongerSideLength(),
 				_ => 1.0
 			};
 		}

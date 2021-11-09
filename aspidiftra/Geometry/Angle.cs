@@ -23,11 +23,17 @@ namespace Aspidiftra.Geometry
 	/// </summary>
 	public sealed class Angle
 	{
+		/// Some handy radian constants.
 		private const double HalfPi = Math.PI / 2.0;
+
 		private const double OneAndAHalfPi = Math.PI + HalfPi;
 		private const double TwoPi = Math.PI * 2.0;
 
+		/// In this library, we will be using orthogonal angles a lot,
+		/// so special static values have been created for this. This makes
+		/// comparison between them a bit safer.
 		public static readonly Angle Degrees0 = new Angle(0.0, AngleUnits.Degrees);
+
 		public static readonly Angle Degrees90 = new Angle(90.0, AngleUnits.Degrees);
 		public static readonly Angle Degrees180 = new Angle(180.0, AngleUnits.Degrees);
 		public static readonly Angle Degrees270 = new Angle(270.0, AngleUnits.Degrees);
@@ -40,17 +46,16 @@ namespace Aspidiftra.Geometry
 		private readonly double _halfCircle;
 		private readonly double _quarterCircle;
 		private double? _cachedCosValue;
-
 		private double? _cachedSinValue;
 
 		/// <summary>
-		///   Creates an angle.
+		///   Constructor.
 		/// </summary>
 		/// <param name="value">Value of the angle.</param>
 		/// <param name="angleUnits">Units of the angle (degrees or radians). See <see cref="AngleUnits" /></param>
 		public Angle(double value, AngleUnits angleUnits)
 		{
-			GeometryUtil.ValidateGeometricValue(value, nameof(value));
+			GeometryUtil.ValidateArgument(value, nameof(value));
 			Units = angleUnits;
 			// Create a couple of handy constants, depending on the units.
 			_halfCircle = Units == AngleUnits.Degrees ? 180.0 : Math.PI;
@@ -70,10 +75,19 @@ namespace Aspidiftra.Geometry
 		/// </summary>
 		public AngleUnits Units { get; }
 
+		/// <summary>
+		///   Sine result for this angle.
+		/// </summary>
 		public double Sin => _cachedSinValue ??= Math.Sin(ToRadians().Value);
 
+		/// <summary>
+		///   Cosine result for this angle.
+		/// </summary>
 		public double Cos => _cachedCosValue ??= Math.Cos(ToRadians().Value);
 
+		/// <summary>
+		///   True if this line is vertical.
+		/// </summary>
 		public bool IsVertical
 		{
 			get
@@ -83,10 +97,10 @@ namespace Aspidiftra.Geometry
 					return true;
 				switch (Units)
 				{
-					case AngleUnits.Degrees when Math.Abs(Value - 90.0) < AspidiftraUtil.GeometricTolerance ||
-					                             Math.Abs(Value - 270.0) < AspidiftraUtil.GeometricTolerance:
-					case AngleUnits.Radians when Math.Abs(Value - HalfPi) < AspidiftraUtil.GeometricTolerance ||
-					                             Math.Abs(Value - OneAndAHalfPi) < AspidiftraUtil.GeometricTolerance:
+					case AngleUnits.Degrees when Math.Abs(Value - 90.0) < GeometryUtil.Tolerance ||
+					                             Math.Abs(Value - 270.0) < GeometryUtil.Tolerance:
+					case AngleUnits.Radians when Math.Abs(Value - HalfPi) < GeometryUtil.Tolerance ||
+					                             Math.Abs(Value - OneAndAHalfPi) < GeometryUtil.Tolerance:
 						return true;
 					default:
 						return false;
@@ -167,6 +181,11 @@ namespace Aspidiftra.Geometry
 			return new Angle(Normalize(Value + _halfCircle), Units);
 		}
 
+		/// <summary>
+		///   Rotates this angle around 90 degrees, clockwise or anticlockwise.
+		/// </summary>
+		/// <param name="clockwise">True to rotate clockwise, false for anticlockwise.</param>
+		/// <returns>Rotated angle.</returns>
 		public Angle Rotate90(bool clockwise)
 		{
 			if (ReferenceEquals(this, Radians0))
@@ -270,10 +289,6 @@ namespace Aspidiftra.Geometry
 
 		public static bool operator ==(Angle a, Angle b)
 		{
-			if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
-				return true;
-			if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
-				return false;
 			if (ReferenceEquals(a, b))
 				return true;
 			if ((ReferenceEquals(a, Radians0) || ReferenceEquals(a, Degrees0)) &&
@@ -288,7 +303,7 @@ namespace Aspidiftra.Geometry
 			if ((ReferenceEquals(a, RadiansOneAndAHalfPi) || ReferenceEquals(a, Degrees270)) &&
 			    (ReferenceEquals(b, RadiansOneAndAHalfPi) || ReferenceEquals(b, Degrees270)))
 				return true;
-			return Math.Abs(a.ToDegrees().Value - b.ToDegrees().Value) <= AspidiftraUtil.GeometricTolerance;
+			return Math.Abs(a.ToDegrees().Value - b.ToDegrees().Value) <= GeometryUtil.Tolerance;
 		}
 
 		public static bool operator !=(Angle a, Angle b)

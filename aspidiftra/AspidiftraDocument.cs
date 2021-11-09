@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Aspose.Pdf;
@@ -11,10 +10,26 @@ namespace Aspidiftra
 {
 	public class AspidiftraDocument : IDisposable
 	{
+		/// <summary>
+		///   Aspose.Pdf object through which we apply watermarks.
+		/// </summary>
 		private readonly PdfFileStamp _fileStamp;
-		private readonly IImmutableSet<int> _pageNumbers;
-		private readonly IImmutableDictionary<PageSize, ImmutableList<int>> _pagesBySize;
 
+		/// <summary>
+		///   The set of page numbers in this document.
+		/// </summary>
+		private readonly IImmutableSet<int> _pageNumbers;
+
+		/// <summary>
+		///   Page numbers grouped by page size.
+		/// </summary>
+		private readonly IImmutableDictionary<PageSize, ImmutableList<int>> _pageNumbersBySize;
+
+		/// <summary>
+		///   Constructor.
+		/// </summary>
+		/// <param name="path">Path to the source PDF.</param>
+		/// <param name="password">Any password required.</param>
 		public AspidiftraDocument(string path, string? password = null)
 		{
 			var document = new Document(path, password);
@@ -30,7 +45,7 @@ namespace Aspidiftra
 			// So we "group" the pages by size, and later, we can ask the watermark to calculate
 			// its positions for each group, then apply those positions to all the pages that share
 			// that size.
-			_pagesBySize = document.Pages
+			_pageNumbersBySize = document.Pages
 				.GroupBy(GetNormalizedPageSize, page => page.Number)
 				.ToImmutableDictionary(grouping => grouping.Key, grouping => grouping.ToImmutableList());
 			// Wrap the document in a PdfFileStamp object, for watermarking.
@@ -41,9 +56,15 @@ namespace Aspidiftra
 		public void Dispose()
 		{
 			// Disposing the file stamp also disposes the wrapped Document.
-			_fileStamp?.Dispose();
+			_fileStamp.Dispose();
 		}
 
+		/// <summary>
+		///   Gets the normalized size of a page. "Normalized" meaning the effective visible
+		///   area translated to a rectangle with (0,0) as the bottom left coordinate.
+		/// </summary>
+		/// <param name="page">The page to get the normalized size of.</param>
+		/// <returns>Normalized page size.</returns>
 		private static PageSize GetNormalizedPageSize(Page page)
 		{
 			// All pages have a MediaBox that defines the page size.
@@ -54,18 +75,20 @@ namespace Aspidiftra
 			return new PageSize(flip ? pageSize.Height : pageSize.Width, flip ? pageSize.Width : pageSize.Height);
 		}
 
+		/// <summary>
+		///   Save this document to disk.
+		/// </summary>
+		/// <param name="path">Path of output PDF.</param>
 		public void Save(string path)
 		{
 			_fileStamp.Save(path);
 		}
 
-		public void ApplyWatermarks(IEnumerable<IWatermark> watermarks)
-		{
-			foreach (var watermark in watermarks)
-				ApplyWatermark(watermark, _fileStamp);
-		}
-
-		private void ApplyWatermark(IWatermark watermark, PdfFileStamp fileStamp)
+		/// <summary>
+		///   Applies the given watermark to this PDF.
+		/// </summary>
+		/// <param name="watermark">Watermark to apply.</param>
+		public void ApplyWatermark(IWatermark watermark)
 		{
 			// Figure out what pages this watermark should apply to.
 			var applicablePageNumbers = watermark.GetApplicablePageNumbers(_pageNumbers);
@@ -73,7 +96,7 @@ namespace Aspidiftra
 			// elements to apply to each appropriate page. We will only ask the watermark to do
 			// this once per unique page size.
 			var pagesAndWatermarksBySize =
-				_pagesBySize.Where(kvp => kvp.Value.Intersect(applicablePageNumbers).Any())
+				_pageNumbersBySize.Where(kvp => kvp.Value.Intersect(applicablePageNumbers).Any())
 					.Select(kvp => (kvp.Value, watermark.GetWatermarkElements(kvp.Key)));
 			// Now apply those watermark elements to each appropriate page.
 			foreach (var (pageNumbers, watermarkElements) in pagesAndWatermarksBySize)
@@ -90,7 +113,7 @@ namespace Aspidiftra
 				};
 				stamp.BindLogo(formattedText);
 				stamp.SetOrigin((float) watermarkElement.Position.X, (float) watermarkElement.Position.Y);
-				fileStamp.AddStamp(stamp);
+				_fileStamp.AddStamp(stamp);
 			}
 		}
 	}

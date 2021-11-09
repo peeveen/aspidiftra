@@ -4,6 +4,9 @@ using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
+	/// <summary>
+	///   A text watermark that will run along the edge of a page.
+	/// </summary>
 	public class PageEdgeTextWatermark : TextWatermark
 	{
 		private readonly Angle _angle;
@@ -60,11 +63,22 @@ namespace Aspidiftra
 				_angle = _angle.Reverse();
 		}
 
+		/// <summary>
+		///   Returns a text slot calculator for the given page size.
+		/// </summary>
+		/// <param name="pageSize">Page to calculate the text slots for.</param>
+		/// <returns>A suitable text slot calculator.</returns>
 		protected override ITextSlotCalculator GetTextSlotCalculator(PageSize pageSize)
 		{
 			return new PageEdgeTextSlotCalculator(pageSize, _pageEdgePosition, _angle, _reverseDirection);
 		}
 
+		/// <summary>
+		///   Gets the angle of the watermark for the given page size. For this type of
+		///   watermark, it will always be the same, regardless of page size.
+		/// </summary>
+		/// <param name="pageSize">Page size.</param>
+		/// <returns>Angle of the watermark.</returns>
 		protected override Angle GetAngle(PageSize pageSize)
 		{
 			return _angle;

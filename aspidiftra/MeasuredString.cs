@@ -1,23 +1,29 @@
 ﻿namespace Aspidiftra
 {
+	/// <summary>
+	///   Object representing a string that has been measured.
+	/// </summary>
 	internal class MeasuredString
 	{
-		internal MeasuredString(string text, double length, bool isSplittable = true)
+		/// <summary>
+		///   Constructor.
+		/// </summary>
+		/// <param name="text">Text that has been measured.</param>
+		/// <param name="length">The width of the string.</param>
+		internal MeasuredString(string text, double length)
 		{
 			Text = text;
 			Length = length;
-			IsSplittable = isSplittable;
 		}
 
-		internal MeasuredString(MeasuredString measuredString, bool isSplittable)
-		{
-			Text = measuredString.Text;
-			Length = measuredString.Length;
-			IsSplittable = isSplittable;
-		}
-
+		/// <summary>
+		///   The text that has been measured.
+		/// </summary>
 		internal string Text { get; }
+
+		/// <summary>
+		///   The measured width of the string.
+		/// </summary>
 		internal double Length { get; }
-		internal bool IsSplittable { get; }
 	}
 }
