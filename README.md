@@ -4,8 +4,8 @@ PDF text watermarking library, for use with Aspose PDF.
 If you attempt to use this extensively without a valid Aspose license, you will probably hit errors.
 
 # Example usage
-
-```var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
+```
+var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
 var watermarkAppearance = new Appearance(Color.Red, 0.6f, watermarkFont);
 
 var pageEdgeWatermark = new PageEdgeTextWatermark(
@@ -22,6 +22,5 @@ var bannerWatermark = new BannerTextWatermark(
 
 AspidiftraUtil.WatermarkPdf("C:\\source.pdf", new[] {pageEdgeWatermark, bannerWatermark}, "C:\\output.pdf");
 ```
-
 # TODO
 * Add a more intelligent mechanism for font size shrinking and growing.
