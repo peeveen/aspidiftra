@@ -50,10 +50,13 @@ namespace Aspidiftra
 		/// <summary>
 		///   Constructor.
 		/// </summary>
-		/// <param name="tokens">Constructs a token collection from the given set of tokens.</param>
-		internal StringTokenCollection(IEnumerable<StringToken> tokens)
+		/// <param name="tokens">
+		///   Constructs a token collection from the given set of tokens.
+		///   This collection is NOT normalized.
+		/// </param>
+		private StringTokenCollection(IEnumerable<StringToken> tokens)
 		{
-			_tokens = Normalize(tokens);
+			_tokens = tokens;
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
