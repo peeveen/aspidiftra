@@ -90,8 +90,6 @@ namespace Aspidiftra
 					contentCount = 0;
 				}
 
-				tokens = tokens.StripLeadingWhitespace();
-
 				while (tokens.Any())
 				{
 					var lastString = stringBuilder.ToString();

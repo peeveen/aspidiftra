@@ -95,19 +95,6 @@ namespace Aspidiftra
 		}
 
 		/// <summary>
-		///   Strips any leading whitespace tokens from the collection.
-		/// </summary>
-		/// <returns>The resulting collection. First token is guaranteed not to be whitespace.</returns>
-		internal StringTokenCollection StripLeadingWhitespace()
-		{
-			var thisAsList = this.ToList();
-			if (thisAsList.Any())
-				while (thisAsList[0].Type == StringToken.TokenType.Whitespace)
-					thisAsList.RemoveAt(0);
-			return new StringTokenCollection(thisAsList);
-		}
-
-		/// <summary>
 		///   Gets the first group of tokens that represent "content". Basically returns the tokens
 		///   from the start of the list that contain one non-whitespace token.
 		/// </summary>
