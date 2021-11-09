@@ -182,6 +182,7 @@ namespace Aspidiftra
 							throw new InsufficientSpaceException();
 						continue;
 					}
+
 					// If we get here, then all the strings fit the slots.
 					return GetPositionedTextCollection(allocatedTextSlots, fontSize);
 				}
@@ -205,7 +206,17 @@ namespace Aspidiftra
 			}
 		}
 
-		private static IImmutableList<string> CalculateWrappedStrings(FontSizeMeasurements fontSizeMeasurements, StringTokenCollection textTokens, IEnumerable<TextSlot> slots)
+		/// <summary>
+		/// Calculates the strings that would best fit the given slots. This function may return one
+		/// more string than there is available slots, if the text cannot fit the given slots.
+		/// </summary>
+		/// <param name="fontSizeMeasurements">Current font size measurements cache.</param>
+		/// <param name="textTokens">The tokens that make up the watermark text.</param>
+		/// <param name="slots">The current text slots.</param>
+		/// <returns>The strings that best fit the slots. An extra string may be added for the
+		/// remainder of the text that does not fit into the slots.</returns>
+		private static IImmutableList<string> CalculateWrappedStrings(FontSizeMeasurements fontSizeMeasurements,
+			StringTokenCollection textTokens, IEnumerable<TextSlot> slots)
 		{
 			try
 			{
@@ -214,14 +225,22 @@ namespace Aspidiftra
 			}
 			catch (SplitTextForSlotsOverflowException splitTextForSlotsOverflowException)
 			{
-				// There is too much text to fit the original number of slots. Re-iterate, and
-				// we will request additional slots.
-				var strings= splitTextForSlotsOverflowException.SplitStrings;
+				// There is too much text to fit the original number of slots. Add an extra string with
+				// the overflow text in it.
+				var strings = splitTextForSlotsOverflowException.SplitStrings;
 				var overflowStrings = splitTextForSlotsOverflowException.OverflowTokens.GetStrings();
 				return strings.AddRange(overflowStrings);
 			}
 		}
 
+		/// <summary>
+		///   Shrinks the font size in response to an exception. If the font cannot be reduced, an
+		///   <see cref="InsufficientSpaceException" /> exception will be thrown.
+		/// </summary>
+		/// <param name="fontSize">Font size to reduce.</param>
+		/// <param name="fit">The current fitting settings.</param>
+		/// <param name="e">Exception that caused a shrink to be necessary.</param>
+		/// <returns>The reduced font size.</returns>
 		private static float ShrinkFontSizeInResponseToException(float fontSize, Fitting fit, Exception e)
 		{
 			// If we're not allowed to shrink the font size, then we are out of options, so
