@@ -1,4 +1,6 @@
-﻿namespace Aspidiftra
+﻿using System;
+
+namespace Aspidiftra
 {
 	/// <summary>
 	///   Object representing a size.
@@ -15,6 +17,8 @@
 		/// <param name="sizing">How the size value should be interpreted.</param>
 		public Size(float size, Sizing sizing)
 		{
+			if (!float.IsFinite(size))
+				throw new ArgumentException("Size value must be a normal finite number.", nameof(size));
 			_size = size;
 			_sizing = sizing;
 		}

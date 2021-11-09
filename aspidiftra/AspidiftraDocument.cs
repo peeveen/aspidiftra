@@ -32,6 +32,8 @@ namespace Aspidiftra
 		/// <param name="password">Any password required.</param>
 		public AspidiftraDocument(string path, string? password = null)
 		{
+			if (string.IsNullOrWhiteSpace(path))
+				throw new ArgumentException("Input path cannot be null, empty, or all whitespace.", nameof(path));
 			var document = new Document(path, password);
 			_pageNumbers = document.Pages.Select(page => page.Number).ToImmutableHashSet();
 			// Gather up all the pages into a dictionary, keyed on normalized page size.
@@ -81,6 +83,8 @@ namespace Aspidiftra
 		/// <param name="path">Path of output PDF.</param>
 		public void Save(string path)
 		{
+			if (string.IsNullOrWhiteSpace(path))
+				throw new ArgumentException("Output path cannot be null, empty, or all whitespace.", nameof(path));
 			_fileStamp.Save(path);
 		}
 

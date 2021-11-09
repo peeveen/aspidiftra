@@ -33,7 +33,7 @@ namespace Aspidiftra
 		/// </summary>
 		/// <param name="pageSize">Current page size.</param>
 		/// <returns>Effective font size.</returns>
-		public float GetSize(PageSize pageSize)
+		internal float GetSize(PageSize pageSize)
 		{
 			return _size.GetEffectiveSize(pageSize);
 		}
@@ -44,7 +44,7 @@ namespace Aspidiftra
 		/// <param name="text">String to measure.</param>
 		/// <param name="fontSize">Size of font to measure with.</param>
 		/// <returns>Width of given string.</returns>
-		public double MeasureString(string text, float fontSize)
+		internal double MeasureString(string text, float fontSize)
 		{
 			return _font.MeasureString(text, fontSize);
 		}

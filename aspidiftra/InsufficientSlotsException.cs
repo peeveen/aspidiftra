@@ -8,7 +8,7 @@ namespace Aspidiftra
 	/// </summary>
 	public class InsufficientSlotsException : Exception
 	{
-		public InsufficientSlotsException(int requested, int available) : base(
+		internal InsufficientSlotsException(int requested, int available) : base(
 			$"Cannot position the {requested} rows of text into the {available} available slots.")
 		{
 			RequestedSlots = requested;

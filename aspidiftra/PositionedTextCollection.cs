@@ -24,7 +24,7 @@ namespace Aspidiftra
 		/// <summary>
 		///   The size of font that this positioned text should be displayed with.
 		/// </summary>
-		public float FontSize { get; }
+		internal float FontSize { get; }
 
 		public IEnumerator<PositionedText> GetEnumerator()
 		{

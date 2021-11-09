@@ -14,7 +14,7 @@ namespace Aspidiftra
 		/// </summary>
 		/// <param name="width">Width of page.</param>
 		/// <param name="height">Height of page.</param>
-		public PageSize(double width, double height) : base(0.0, 0.0, width, height)
+		internal PageSize(double width, double height) : base(0.0, 0.0, width, height)
 		{
 		}
 
@@ -24,7 +24,7 @@ namespace Aspidiftra
 		/// </summary>
 		/// <param name="amount">Size of margin.</param>
 		/// <returns>Resulting page size.</returns>
-		public PageSize ApplyMargin(double amount)
+		internal PageSize ApplyMargin(double amount)
 		{
 			try
 			{
@@ -45,7 +45,7 @@ namespace Aspidiftra
 		///   Angle between the X axis and the line that runs from the
 		///   bottom-left corner to the top-right corner.
 		/// </returns>
-		public Angle BottomLeftToTopRightAngle()
+		internal Angle BottomLeftToTopRightAngle()
 		{
 			return new Angle(Math.Atan(Height / Width), AngleUnits.Radians);
 		}
@@ -58,7 +58,7 @@ namespace Aspidiftra
 		///   Angle between the X axis and the line that runs from the
 		///   bottom-right corner to the top-left corner.
 		/// </returns>
-		public Angle BottomRightToTopLeftAngle()
+		internal Angle BottomRightToTopLeftAngle()
 		{
 			return BottomLeftToTopRightAngle().ReverseY();
 		}
@@ -71,7 +71,7 @@ namespace Aspidiftra
 		///   Angle between the X axis and the line that runs from the
 		///   top-left corner to the bottom-right corner.
 		/// </returns>
-		public Angle TopLeftToBottomRightAngle()
+		internal Angle TopLeftToBottomRightAngle()
 		{
 			return BottomLeftToTopRightAngle().ReverseX();
 		}
@@ -84,7 +84,7 @@ namespace Aspidiftra
 		///   Angle between the X axis and the line that runs from the
 		///   top-right corner to the bottom-left corner.
 		/// </returns>
-		public Angle TopRightToBottomLeftAngle()
+		internal Angle TopRightToBottomLeftAngle()
 		{
 			return BottomLeftToTopRightAngle().Reverse();
 		}

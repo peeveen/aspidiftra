@@ -21,7 +21,7 @@ namespace Aspidiftra
 			OverflowTokens = overflowTokens;
 		}
 
-		public IImmutableList<string> SplitStrings { get; }
-		public StringTokenCollection OverflowTokens { get; }
+		internal IImmutableList<string> SplitStrings { get; }
+		internal StringTokenCollection OverflowTokens { get; }
 	}
 }

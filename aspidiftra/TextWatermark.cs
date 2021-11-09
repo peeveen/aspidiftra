@@ -54,6 +54,8 @@ namespace Aspidiftra
 			Fitting fit, Size marginSize,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
 		{
+			if (string.IsNullOrWhiteSpace(text))
+				throw new ArgumentException("Watermark text cannot be null, empty or all whitespace.", nameof(text));
 			Text = text;
 			Fit = fit;
 			Appearance = appearance;
@@ -207,14 +209,16 @@ namespace Aspidiftra
 		}
 
 		/// <summary>
-		/// Calculates the strings that would best fit the given slots. This function may return one
-		/// more string than there is available slots, if the text cannot fit the given slots.
+		///   Calculates the strings that would best fit the given slots. This function may return one
+		///   more string than there is available slots, if the text cannot fit the given slots.
 		/// </summary>
 		/// <param name="fontSizeMeasurements">Current font size measurements cache.</param>
 		/// <param name="textTokens">The tokens that make up the watermark text.</param>
 		/// <param name="slots">The current text slots.</param>
-		/// <returns>The strings that best fit the slots. An extra string may be added for the
-		/// remainder of the text that does not fit into the slots.</returns>
+		/// <returns>
+		///   The strings that best fit the slots. An extra string may be added for the
+		///   remainder of the text that does not fit into the slots.
+		/// </returns>
 		private static IImmutableList<string> CalculateWrappedStrings(FontSizeMeasurements fontSizeMeasurements,
 			StringTokenCollection textTokens, IEnumerable<TextSlot> slots)
 		{

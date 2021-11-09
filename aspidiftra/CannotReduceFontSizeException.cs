@@ -12,7 +12,7 @@ namespace Aspidiftra
 		/// Constructor.
 		/// </summary>
 		/// <param name="minFontSize">Minimum font size that has been reached.</param>
-		public CannotReduceFontSizeException(float minFontSize) : base(
+		internal CannotReduceFontSizeException(float minFontSize) : base(
 			$"Even at the minimum font size of {minFontSize}, the watermark text could not fit on the page.")
 		{
 		}
