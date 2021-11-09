@@ -20,7 +20,8 @@ var bannerWatermark = new BannerTextWatermark(
 	new Size(0.08f, Sizing.RelativeToAverageSideLength),
 	new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
 
-AspidiftraUtil.WatermarkPdf("C:\\source.pdf", new[] {pageEdgeWatermark, bannerWatermark}, "C:\\output.pdf");```
+AspidiftraUtil.WatermarkPdf("C:\\source.pdf", new[] {pageEdgeWatermark, bannerWatermark}, "C:\\output.pdf");
+```
 
 # TODO
 * Add a more intelligent mechanism for font size shrinking and growing.
