@@ -13,6 +13,32 @@ namespace Aspidiftra
 			return pages;
 		}
 
+		/// <summary>
+		///   Watermarks the given source PDF, and saves to a new path.
+		/// </summary>
+		/// <param name="inputPath">Path to the source PDF.</param>
+		/// <param name="watermarks">The watermarks to apply.</param>
+		/// <param name="outputPath">The path to write the watermarked PDF to.</param>
+		public static void WatermarkPdf(string inputPath, IEnumerable<IWatermark> watermarks, string outputPath)
+		{
+			if (inputPath == null)
+				throw new ArgumentNullException(nameof(inputPath));
+			if (outputPath == null)
+				throw new ArgumentNullException(nameof(outputPath));
+			if (watermarks == null)
+				throw new ArgumentNullException(nameof(watermarks));
+
+			using var sourcePdf = new AspidiftraDocument(inputPath);
+			foreach (var watermark in watermarks)
+				sourcePdf.ApplyWatermark(watermark);
+			sourcePdf.Save(outputPath);
+		}
+
+		/// <summary>
+		/// Concatenates multiple PDF documents together into one.
+		/// </summary>
+		/// <param name="paths">Paths to the PDFs that you want to join, in order.</param>
+		/// <param name="outputPath">Path to write the new concatenated PDF to.</param>
 		public static void ConcatenatePdfs(IEnumerable<string> paths, string outputPath)
 		{
 			if (paths == null)

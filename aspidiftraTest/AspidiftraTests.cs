@@ -167,9 +167,7 @@ namespace AspidiftraTest
 				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
 
-			using var aspDoc = new AspidiftraDocument(testPdfPath);
-			aspDoc.ApplyWatermark(pageEdgeWatermark);
-			aspDoc.Save(outputPdfPath);
+			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {pageEdgeWatermark}, outputPdfPath);
 
 			// TODO: Test the output, somehow?
 		}
@@ -188,10 +186,7 @@ namespace AspidiftraTest
 				new Size(0.08f, Sizing.RelativeToAverageSideLength),
 				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
 
-			using var aspDoc = new AspidiftraDocument(testPdfPath);
-			aspDoc.ApplyWatermark(bannerWatermark);
-			aspDoc.Save(outputPdfPath);
-
+			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {bannerWatermark}, outputPdfPath);
 			// TODO: Test the output, somehow?
 		}
 	}
