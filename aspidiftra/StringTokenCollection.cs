@@ -56,16 +56,26 @@ namespace Aspidiftra
 			_tokens = Normalize(tokens);
 		}
 
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _tokens.GetEnumerator();
+		}
+
+		public IEnumerator<StringToken> GetEnumerator()
+		{
+			return _tokens.GetEnumerator();
+		}
+
 		/// <summary>
-		/// Ensures that no consecutive pair of tokens are whitespace and line break by removing
-		/// the whitespace.
+		///   Ensures that no consecutive pair of tokens are whitespace and line break by removing
+		///   the whitespace.
 		/// </summary>
 		/// <param name="tokens">Tokens to normalize</param>
 		/// <returns>Normalized collection.</returns>
 		private static IEnumerable<StringToken> Normalize(IEnumerable<StringToken> tokens)
 		{
 			var tokenList = tokens.ToList();
-			var indicesToRemove=tokenList.Select((token, index) =>
+			var indicesToRemove = tokenList.Select((token, index) =>
 			{
 				if (token.Type == StringToken.TokenType.Whitespace)
 				{
@@ -76,21 +86,12 @@ namespace Aspidiftra
 					if (tokenList[index + 1].Type == StringToken.TokenType.LineBreak)
 						return index;
 				}
-				return (int?)null;
-			}).Where(index=>index!=null).Cast<int>().Reverse();
-			foreach (int index in indicesToRemove)
+
+				return (int?) null;
+			}).Where(index => index != null).Cast<int>().Reverse();
+			foreach (var index in indicesToRemove)
 				tokenList.RemoveAt(index);
 			return tokenList;
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _tokens.GetEnumerator();
-		}
-
-		public IEnumerator<StringToken> GetEnumerator()
-		{
-			return _tokens.GetEnumerator();
 		}
 
 		/// <summary>
