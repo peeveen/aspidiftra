@@ -84,11 +84,11 @@ namespace AspidiftraTest
 			// ReSharper disable line StringLiteralTypo
 			var splitTestText = "   This is a     tést of\nthe sssssssssssssstring   splitting code\n\n  .";
 			var tokens = new StringTokenCollection(splitTestText).ToList();
-			Assert.AreEqual(22, tokens.Count);
-			var eleventhToken = tokens[10];
-			var fifteenthToken = tokens[14];
-			Assert.IsTrue(eleventhToken.String == "\n" && eleventhToken.Type == StringToken.TokenType.LineBreak);
-			Assert.IsTrue(fifteenthToken.String == "   " && fifteenthToken.Type == StringToken.TokenType.Whitespace);
+			Assert.AreEqual(20, tokens.Count);
+			var tenthToken = tokens[9];
+			var fourteenthToken = tokens[13];
+			Assert.IsTrue(tenthToken.String == "\n" && tenthToken.Type == StringToken.TokenType.LineBreak);
+			Assert.IsTrue(fourteenthToken.String == "   " && fourteenthToken.Type == StringToken.TokenType.Whitespace);
 		}
 
 		[Test]
