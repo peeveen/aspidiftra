@@ -5,7 +5,8 @@ If you attempt to use this extensively without a valid Aspose license, you will 
 
 # Example usage
 ```
-var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
+var fontSize = new Size(.025f, Sizing.RelativeToDiagonalSize);
+var watermarkFont = new Font("Helvetica", FontStyles.Italic, fontSize);
 var watermarkRedAppearance = new Appearance(Color.Red, 1.0f, watermarkFont);
 var watermarkGreenAppearance = new Appearance(Color.Green, 0.8f, watermarkFont);
 
