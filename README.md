@@ -30,5 +30,9 @@ var bannerWatermark = new BannerTextWatermark(
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
 ```
-
 ![Aspidiftra](/Media/watermarkedDocument.png?raw=true)
+
+# Other features
+* All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
+* Sizes (font sizes, margin sizes) can be specified as absolute or relative to page dimensions.
+* Built-in page diagonal BannerAngle classes for easy corner-to-corner banner watermarking.
