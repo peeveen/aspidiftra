@@ -144,19 +144,6 @@ namespace AspidiftraTest
 		}
 
 		[Test]
-		[Order(1)]
-		public void Concatenate()
-		{
-			var outputPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
-			var testPdfPaths = Directory.GetFiles(TestPdfsFolder)
-				.Select(Path.GetFullPath)
-				.ToImmutableList();
-			AspidiftraUtil.ConcatenatePdfs(testPdfPaths, outputPdfPath);
-
-			// TODO: Test the output.
-		}
-
-		[Test]
 		[Order(2)]
 		public void ApplyPageEdgeWatermark()
 		{
