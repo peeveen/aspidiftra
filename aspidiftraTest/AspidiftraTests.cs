@@ -39,6 +39,7 @@ namespace AspidiftraTest
 		private const string Portrait = "06_Portrait_750_1200.pdf";
 		private const string FivePages = "07_FivePages_841.98_595.38.pdf";
 		private const string DigitalSignature = "08_DigitalSignature_612_792.pdf";
+		private const string LoremIpsum = "09_LoremIpsum.pdf";
 
 		[SetUp]
 		public void Setup()
@@ -188,6 +189,37 @@ namespace AspidiftraTest
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {bannerWatermark}, outputPdfPath);
 			// TODO: Test the output, somehow?
+		}
+
+		[Test]
+		[Order(2)]
+		public void ApplyBoth()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "BothWatermarked.pdf");
+			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
+			var watermarkRedAppearance = new Appearance(Color.Red, 1.0f, watermarkFont);
+			var watermarkGreenAppearance = new Appearance(Color.Green, 0.8f, watermarkFont);
+
+			var pageEdgeWatermark = new PageEdgeTextWatermark(
+				"This is a page edge watermark", // Watermark text
+				watermarkRedAppearance, // Cosmetic appearance of the text
+				PageEdgePosition.Bottom, // Where to place the watermark
+				Justification.Centre, // Justification of text
+				Fitting.Wrap | Fitting.Shrink, // How to best fit the text if it bigger than the page.
+				new Size(0.03f, Sizing.RelativeToAverageSideLength), // Margin
+				true); // Reverse the direction of the text
+
+			var bannerWatermark = new BannerTextWatermark(
+				"This is my banner text.",
+				watermarkGreenAppearance,
+				Justification.Centre,
+				Fitting.Wrap | Fitting.Shrink | Fitting.Grow,
+				new Size(0.08f, Sizing.RelativeToAverageSideLength),
+				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
+
+			var watermarks = new IWatermark[] { pageEdgeWatermark, bannerWatermark };
+			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
 		}
 	}
 }
