@@ -3,6 +3,7 @@ PDF text watermarking library, for use with Aspose PDF.
 
 * Targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
 * Arbitrary minimum version of Aspose PDF is 20.12. Standard Aspose licensing restrictions apply.
+* Currently provides page edge watermarks or banner watermarks.
 
 # Example usages
 ```
