@@ -213,6 +213,51 @@ namespace AspidiftraTest
 
 		[Test]
 		[Order(2)]
+		public void ApplyBoth2()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "BothWatermarked2.pdf");
+			var impactFont = new Font("Impact", FontStyles.Bold, new Size(.045f, Sizing.RelativeToShorterSide));
+			var courierFont = new Font("Courier New", FontStyles.Regular, new Size(.025f, Sizing.RelativeToWidth));
+			var blueVioletImpact = new Appearance(Color.BlueViolet, 0.75f, impactFont); // 75% opacity
+			var maroonCourier = new Appearance(Color.Maroon, 0.5f, courierFont); // 50% opacity
+
+			var topPageEdgeWatermark = new PageEdgeTextWatermark(
+				"This is a page edge watermark with\nan explicit line break in it", // Watermark text
+				maroonCourier, // Cosmetic appearance of the text
+				PageEdgePosition.Top, // Where to place the watermark
+				Justification.Left, // Justification of text
+				Fitting.Wrap, // Permitted fitting constraints
+				new Size(0.025f, Sizing.RelativeToDiagonalSize)); // Margin
+
+			var rightPageEdgeWatermark = new PageEdgeTextWatermark(
+				"This is a page edge watermark that has got a huge amount of text " +
+				"in it, and so we will probably find that it needs to be wrapped " +
+				"across multiple lines",
+				maroonCourier, // Cosmetic appearance of the text
+				PageEdgePosition.Right, // Where to place the watermark
+				Justification.Left, // Justification of text
+				Fitting.Wrap, // Permitted fitting constraints
+				new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Reverse the direction of the text
+
+			var bannerWatermark = new BannerTextWatermark(
+				"This banner text also has lots and lots and lots and lots and lots " +
+				"of text in it and will undoubtedly not all fit on one line",
+				blueVioletImpact, // Cosmetic appearance of the text
+				Justification.Centre, // Justification
+				Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted fitting constraints.
+				new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
+				new BottomLeftToTopRightBannerAngle()); // Angle of banner
+
+			using var doc = new AspidiftraDocument(testPdfPath);
+			doc.ApplyWatermark(bannerWatermark);
+			doc.ApplyWatermark(topPageEdgeWatermark);
+			doc.ApplyWatermark(rightPageEdgeWatermark);
+			doc.Save(outputPdfPath);
+		}
+
+		[Test]
+		[Order(2)]
 		public void TestBannerRotation()
 		{
 			var testPdfPath = Path.Join(TestPdfsFolder, Square720Pages);
@@ -222,7 +267,7 @@ namespace AspidiftraTest
 			var watermarks = new List<IWatermark>();
 			for (var n = 1; n <= 720; ++n)
 			{
-				var angle = (n-1) * 0.5;
+				var angle = (n - 1) * 0.5;
 				var requiredPageNumbers = new[] {n}.ToImmutableHashSet();
 				var bannerWatermark = new BannerTextWatermark(
 					$"Banner at {angle} degrees",

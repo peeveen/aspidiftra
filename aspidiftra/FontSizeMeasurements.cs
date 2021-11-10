@@ -140,7 +140,7 @@ namespace Aspidiftra
 
 			// If there are still words left over, chuck an exception.
 			if (tokens.Any())
-				throw new SplitTextForSlotsOverflowException(resultsList, tokens);
+				throw new SplitTextForSlotsOverflowException(resultsList, tokens.Normalize());
 			return resultsList;
 		}
 	}

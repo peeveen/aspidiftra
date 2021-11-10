@@ -189,6 +189,9 @@ namespace Aspidiftra
 				var pointAdjustedByReversedAngle = point + readjustmentOffsetReversed;
 				return _pageSize.Contains(pointAdjustedByAngle) ? pointAdjustedByAngle : pointAdjustedByReversedAngle;
 			}).Where(point => point != null).Cast<Point>().ToImmutableList();
+			// If the line is running from corner to corner, we might get more than 2 points back.
+			// Remove non-unique ones.
+			textSlotStartAndEndPoints = textSlotStartAndEndPoints.Distinct().ToImmutableList();
 			// If we didn't get a start AND end point back, then there is no room for the slot.
 			if (!(textSlotStartAndEndPoints is {Count: 2}))
 				return null;

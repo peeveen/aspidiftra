@@ -44,7 +44,7 @@ namespace Aspidiftra
 			}
 
 			AddCurrentToken();
-			_tokens = Normalize(tokens);
+			_tokens = new StringTokenCollection(tokens).Normalize();
 		}
 
 		/// <summary>
@@ -73,11 +73,10 @@ namespace Aspidiftra
 		///   Ensures that no consecutive pair of tokens are whitespace and line break by removing
 		///   the whitespace.
 		/// </summary>
-		/// <param name="tokens">Tokens to normalize</param>
 		/// <returns>Normalized collection.</returns>
-		private static IEnumerable<StringToken> Normalize(IEnumerable<StringToken> tokens)
+		internal StringTokenCollection Normalize()
 		{
-			var tokenList = tokens.ToList();
+			var tokenList = _tokens.ToList();
 			var indicesToRemove = tokenList.Select((token, index) =>
 			{
 				if (token.Type == StringToken.TokenType.Whitespace)
@@ -94,7 +93,7 @@ namespace Aspidiftra
 			}).Where(index => index != null).Cast<int>().Reverse();
 			foreach (var index in indicesToRemove)
 				tokenList.RemoveAt(index);
-			return tokenList;
+			return new StringTokenCollection(tokenList);
 		}
 
 		/// <summary>
