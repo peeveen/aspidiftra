@@ -1,9 +1,8 @@
 # aspidiftra
 PDF text watermarking library, for use with Aspose PDF.
 
-* Currently targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
-* Arbitrary minimum version of Aspose PDF is 20.12.
-* If you attempt to use this extensively without a valid Aspose license, you will probably hit errors.
+* Targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
+* Arbitrary minimum version of Aspose PDF is 20.12. Standard Aspose licensing restrictions apply.
 
 # Example usages
 ```
@@ -74,7 +73,6 @@ doc.Save("C:\\Watermarked.pdf");
 ```
 ![AspidiftraSample2](/media/watermarkedDocument2.png)
 
-# Other features
+# Features
 * All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
-* Sizes (font sizes, margin sizes) can be specified as absolute or relative to page dimensions.
-* Built-in page diagonal BannerAngle classes for easy corner-to-corner banner watermarking.
+* Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
