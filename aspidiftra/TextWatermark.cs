@@ -100,8 +100,15 @@ namespace Aspidiftra
 
 			// This object will provide "text slots" (places to put strings) to the text position calculator.
 			var textSlotCalculator = GetTextSlotCalculator(pageSizeWithoutMargin);
+			// Create a new font size measurements cache.
+			var fontSizeMeasurementsCache = new FontSizeMeasurementsCache(Appearance.Font, textSlotCalculator);
+
 			// So let's get the results of the text positioning.
-			var positionedText = GetPositionedText(fontSize, textSlotCalculator);
+			var positionedText = GetPositionedText(fontSize, Fit, fontSizeMeasurementsCache);
+			// OK, it has successfully fit the watermark text on the page.
+			// But can we now grow the font a little?
+			if (Fit.HasGrow())
+				positionedText = GrowToBestFit(positionedText, fontSizeMeasurementsCache);
 
 			// We can now convert those calculated text positions to watermark elements.
 			// All calculated coordinates from the TextPositionCalculator will be for a page size
@@ -129,82 +136,141 @@ namespace Aspidiftra
 		protected abstract Angle GetAngle(PageSize pageSize);
 
 		/// <summary>
+		///   Increases font size gradually until it doesn't fit any more, and returns the
+		///   closest fitting watermark text.
+		/// </summary>
+		/// <param name="positionedTextCollection">The calculated text collection, pre-growth.</param>
+		/// <param name="fontSizeMeasurementsCache">The current measurements cache, up until now.</param>
+		/// <returns>The positioned text that most closely fits the page.</returns>
+		private PositionedTextCollection GrowToBestFit(PositionedTextCollection positionedTextCollection,
+			FontSizeMeasurementsCache fontSizeMeasurementsCache)
+		{
+			for (;;)
+				try
+				{
+					// Tell the algorithm to use Fitting.None (no shrinking, no wrapping), so it will
+					// throw an exception as soon as the text does not fit.
+					positionedTextCollection = GetPositionedText(positionedTextCollection.FontSize + MinimumFontSizeDelta,
+						Fitting.None, fontSizeMeasurementsCache);
+				}
+				catch (Exception)
+				{
+					// Any exception, and we're reverting back to the last successful fit.
+					break;
+				}
+
+			return positionedTextCollection;
+		}
+
+		/// <summary>
 		///   Gets the positioned text elements for this watermark. If there is no way to
 		///   fit the text on the page, this method will throw
 		///   an <see cref="InsufficientSpaceException" /> exception.
 		/// </summary>
 		/// <param name="fontSize">Current font size.</param>
-		/// <param name="textSlotCalculator">The text slot calculator for this type of watermark.</param>
+		/// <param name="fit">Current fitting constraints.</param>
+		/// <param name="fontSizeMeasurementsCache">Cache of all measurements, up till now.</param>
 		/// <returns>The positioned text collection.</returns>
-		private PositionedTextCollection GetPositionedText(float fontSize, ITextSlotCalculator textSlotCalculator)
+		private PositionedTextCollection GetPositionedText(float fontSize, Fitting fit,
+			FontSizeMeasurementsCache fontSizeMeasurementsCache)
 		{
 			// Start by turning the watermark text into a set of tokens.
 			var textTokens = new StringTokenCollection(Text);
 			// Now build strings from those tokens.
 			IImmutableList<string> currentStrings = textTokens.GetStrings().ToImmutableList();
 
-			// Create a new font size measurements cache.
-			var fontSizeMeasurementsCache = new FontSizeMeasurementsCache(Appearance.Font, textSlotCalculator);
 			// Iterate until either:
 			// a) We manage to fit the strings onto the page, or
-			// b) We can't shrink the font size any further.
+			// b) An InsufficientSpaceException comes back from the fitting algorithm.
 			for (;;)
 			{
-				// Okay, get the measurements cache for the current font size. If not already done,
+				// Okay, get the measurements cache for the current font size. If not already cached,
 				// then this will calculate the text slots.
 				var fontSizeMeasurements = fontSizeMeasurementsCache.GetMeasurements(fontSize);
-
-				// Measure the current strings.
-				IReadOnlyList<MeasuredString> measuredStrings =
-					fontSizeMeasurements.MeasureStrings(currentStrings).ToImmutableList();
-
 				try
 				{
-					// Get enough text slots for the current list of strings.
-					// Might get an InsufficientSlotsException here, which will trigger a font size
-					// reduction (if allowed).
-					IImmutableList<TextSlot> slots = fontSizeMeasurements.TextSlotProvider.GetTextSlots(measuredStrings.Count)
+					return CalculatePositionedText(fontSizeMeasurements, fit, textTokens, currentStrings);
+				}
+				catch (TextNeedsWrappedException textNeedsWrappedException)
+				{
+					currentStrings = textNeedsWrappedException.WrappedStrings.ToImmutableList();
+				}
+				catch (FontSizeTooLargeException fontSizeTooLargeException)
+				{
+					fontSize = fontSizeTooLargeException.ReducedFontSize;
+				}
+				// If we get an InsufficientSpaceException, then we just have to let it reach the user.
+			}
+		}
+
+		/// <summary>
+		///   Calculates positions for the given watermarked text.
+		/// </summary>
+		/// <param name="fontSizeMeasurements">Current font size measurement cache.</param>
+		/// <param name="fit">Current fitting constraints.</param>
+		/// <param name="textTokens">Text tokens that make up the watermark text.</param>
+		/// <param name="currentStrings">The current list of string lines that make up the watermark text.</param>
+		/// <returns>
+		///   The positioned text elements. Alternatively, a suitable exception will be thrown indicating
+		///   a possible modification to the font size or string lines that would make them fit better.
+		///   This will either be a <see cref="FontSizeTooLargeException" /> or <see cref="TextNeedsWrappedException" />.
+		///   If the algorithm cannot see a way to make the text fit, then it will throw an
+		///   <see cref="InsufficientSpaceException" />.
+		/// </returns>
+		private PositionedTextCollection CalculatePositionedText(FontSizeMeasurements fontSizeMeasurements,
+			Fitting fit, StringTokenCollection textTokens, IEnumerable<string> currentStrings)
+		{
+			var fontSize = fontSizeMeasurements.FontSize;
+			// Measure the current strings.
+			IReadOnlyList<MeasuredString> measuredStrings =
+				fontSizeMeasurements.MeasureStrings(currentStrings).ToImmutableList();
+
+			try
+			{
+				// Get enough text slots for the current list of strings.
+				// Might get an InsufficientSlotsException here, which will trigger a font size
+				// reduction (if allowed).
+				IImmutableList<TextSlot> slots = fontSizeMeasurements.TextSlotProvider.GetTextSlots(measuredStrings.Count)
+					.ToImmutableList();
+
+				// Allocate each measured string to a slot.
+				IImmutableList<AllocatedTextSlot> allocatedTextSlots =
+					measuredStrings.Zip(slots, (str, slot) => new AllocatedTextSlot(str, slot, Justification))
 						.ToImmutableList();
 
-					// Allocate each measured string to a slot.
-					IImmutableList<AllocatedTextSlot> allocatedTextSlots =
-						measuredStrings.Zip(slots, (str, slot) => new AllocatedTextSlot(str, slot, Justification))
-							.ToImmutableList();
+				// Do the strings fit their allocated slots?
+				var notAllStringsFit = allocatedTextSlots.Any(slot => !slot.TextFits);
+				if (notAllStringsFit)
+				{
+					if (fit.HasWrap())
+						throw new TextNeedsWrappedException(CalculateWrappedStrings(fontSizeMeasurements, textTokens, slots));
+					if (fit.HasShrink())
+						throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, MinimumFontSizeDelta, fit));
+					// Not enough room on the page, and we're not allowed to do anything about it!
+					throw new InsufficientSpaceException();
+				}
 
-					// Do the strings fit their allocated slots?
-					var notAllStringsFit = allocatedTextSlots.Any(slot => !slot.TextFits);
-					if (notAllStringsFit)
-					{
-						if (Fit.HasWrap())
-							currentStrings = CalculateWrappedStrings(fontSizeMeasurements, textTokens, slots);
-						else if (Fit.HasShrink())
-							fontSize = ShrinkFontSize(fontSize, MinimumFontSizeDelta);
-						else
-							// Not enough room on the page, and we're not allowed to do anything about it!
-							throw new InsufficientSpaceException();
-						continue;
-					}
-
-					// If we get here, then all the strings fit the slots.
-					return GetPositionedTextCollection(allocatedTextSlots, fontSize);
-				}
-				catch (CannotSplitTextException cannotSplitTextException)
-				{
-					// A line of text cannot be split at a suitable point.
-					fontSize = ShrinkFontSizeInResponseToException(fontSize, Fit, cannotSplitTextException);
-				}
-				catch (InsufficientSlotsException insufficientSlotsException)
-				{
-					// There are not enough slots for the text.
-					// Wrapping lines will only make this worse.
-					fontSize = ShrinkFontSizeInResponseToException(fontSize, Fit, insufficientSlotsException);
-				}
-				catch (CannotReduceFontSizeException cannotReduceFontSizeException)
-				{
-					// We've hit the lower limit on the font size, and it still doesn't fit.
-					// Nothing we can do.
-					throw new InsufficientSpaceException(cannotReduceFontSizeException);
-				}
+				// If we get here, then all the strings fit the slots.
+				return GetPositionedTextCollection(allocatedTextSlots, fontSize);
+			}
+			catch (CannotSplitTextException cannotSplitTextException)
+			{
+				// A line of text cannot be split at a suitable point.
+				throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, MinimumFontSizeDelta, fit,
+					cannotSplitTextException));
+			}
+			catch (InsufficientSlotsException insufficientSlotsException)
+			{
+				// There are not enough slots for the text.
+				// Wrapping lines will only make this worse.
+				throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, MinimumFontSizeDelta, fit,
+					insufficientSlotsException));
+			}
+			catch (CannotReduceFontSizeException cannotReduceFontSizeException)
+			{
+				// We've hit the lower limit on the font size, and it still doesn't fit.
+				// Nothing we can do.
+				throw new InsufficientSpaceException(cannotReduceFontSizeException);
 			}
 		}
 
@@ -238,23 +304,6 @@ namespace Aspidiftra
 		}
 
 		/// <summary>
-		///   Shrinks the font size in response to an exception. If the font cannot be reduced, an
-		///   <see cref="InsufficientSpaceException" /> exception will be thrown.
-		/// </summary>
-		/// <param name="fontSize">Font size to reduce.</param>
-		/// <param name="fit">The current fitting settings.</param>
-		/// <param name="e">Exception that caused a shrink to be necessary.</param>
-		/// <returns>The reduced font size.</returns>
-		private static float ShrinkFontSizeInResponseToException(float fontSize, Fitting fit, Exception e)
-		{
-			// If we're not allowed to shrink the font size, then we are out of options, so
-			// the exception will just have to bubble up.
-			if (fit.HasShrink())
-				return ShrinkFontSize(fontSize, MinimumFontSizeDelta);
-			throw new InsufficientSpaceException(e);
-		}
-
-		/// <summary>
 		///   Reduces the given font size by the given amount.
 		/// </summary>
 		/// <param name="fontSize">
@@ -262,15 +311,30 @@ namespace Aspidiftra
 		///   <see cref="CannotReduceFontSizeException" /> exception will be thrown.
 		/// </param>
 		/// <param name="shrinkAmount">Amount to reduce it by.</param>
+		/// <param name="fit">The current fitting constraints.</param>
+		/// <param name="innerException">The exception that prompted the font size reduction attempt.</param>
 		/// <returns>Reduced font size. It will never be reduced below <see cref="MinimumFontSize" />.</returns>
-		private static float ShrinkFontSize(float fontSize, float shrinkAmount)
+		private static float ShrinkFontSize(float fontSize, float shrinkAmount, Fitting fit,
+			Exception? innerException = null)
 		{
-			if (Math.Abs(fontSize - MinimumFontSize) < float.Epsilon)
-				throw new CannotReduceFontSizeException(MinimumFontSize);
-			fontSize -= shrinkAmount;
-			if (fontSize < MinimumFontSize)
-				fontSize = MinimumFontSize;
-			return fontSize;
+			if (fit.HasShrink())
+				try
+				{
+					if (Math.Abs(fontSize - MinimumFontSize) < float.Epsilon)
+						throw new CannotReduceFontSizeException(MinimumFontSize, innerException);
+					fontSize -= shrinkAmount;
+					if (fontSize < MinimumFontSize)
+						fontSize = MinimumFontSize;
+					return fontSize;
+				}
+				catch (CannotReduceFontSizeException cannotReduceFontSizeException)
+				{
+					if (innerException != null)
+						throw new InsufficientSpaceException(cannotReduceFontSizeException);
+					throw;
+				}
+
+			throw new InsufficientSpaceException(innerException);
 		}
 
 		/// <summary>

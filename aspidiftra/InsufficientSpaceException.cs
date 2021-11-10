@@ -11,11 +11,7 @@ namespace Aspidiftra
 	{
 		private const string ErrorText = "There is not enough room on the page for the watermark text.";
 
-		internal InsufficientSpaceException(Exception innerException) : base(ErrorText, innerException)
-		{
-		}
-
-		internal InsufficientSpaceException() : base(ErrorText)
+		internal InsufficientSpaceException(Exception? innerException = null) : base(ErrorText, innerException)
 		{
 		}
 	}

@@ -16,7 +16,6 @@ namespace Aspidiftra
 	internal class FontSizeMeasurements
 	{
 		private readonly Font _font;
-		private readonly float _fontSize;
 		private readonly IDictionary<string, MeasuredString> _stringMeasurements = new Dictionary<string, MeasuredString>();
 
 		/// <summary>
@@ -28,9 +27,14 @@ namespace Aspidiftra
 		internal FontSizeMeasurements(Font font, float fontSize, ITextSlotProvider textSlotProvider)
 		{
 			_font = font;
-			_fontSize = fontSize;
+			FontSize = fontSize;
 			TextSlotProvider = textSlotProvider;
 		}
+
+		/// <summary>
+		/// Size of font that these measurements are for.
+		/// </summary>
+		internal float FontSize { get; }
 
 		/// <summary>
 		///   The text slot provider, loaded with the slots that were calculated specifically for the
@@ -47,7 +51,7 @@ namespace Aspidiftra
 		{
 			if (!_stringMeasurements.TryGetValue(text, out var measuredString))
 			{
-				var width = _font.MeasureString(text, _fontSize);
+				var width = _font.MeasureString(text, FontSize);
 				measuredString = _stringMeasurements[text] = new MeasuredString(text, width);
 			}
 

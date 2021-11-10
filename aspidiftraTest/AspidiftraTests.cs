@@ -164,7 +164,7 @@ namespace AspidiftraTest
 			var pageEdgeWatermark = new PageEdgeTextWatermark(
 				"This is a page edge watermark test that I hope\nwill execute successfully.",
 				watermarkAppearance,
-				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
+				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink | Fitting.Grow,
 				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {pageEdgeWatermark}, outputPdfPath);
