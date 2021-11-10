@@ -104,7 +104,7 @@ namespace Aspidiftra
 			var fontSizeMeasurementsCache = new FontSizeMeasurementsCache(Appearance.Font, textSlotCalculator);
 
 			// So let's get the results of the text positioning.
-			var positionedText = GetPositionedText(fontSize, Fit, fontSizeMeasurementsCache);
+			var positionedText = CalculatePositionedText(fontSize, Fit, fontSizeMeasurementsCache);
 			// OK, it has successfully fit the watermark text on the page.
 			// But can we now grow the font a little?
 			if (Fit.HasGrow())
@@ -150,7 +150,7 @@ namespace Aspidiftra
 				{
 					// Tell the algorithm to use Fitting.None (no shrinking, no wrapping), so it will
 					// throw an exception as soon as the text does not fit.
-					positionedTextCollection = GetPositionedText(positionedTextCollection.FontSize + MinimumFontSizeDelta,
+					positionedTextCollection = CalculatePositionedText(positionedTextCollection.FontSize + MinimumFontSizeDelta,
 						Fitting.None, fontSizeMeasurementsCache);
 				}
 				catch (Exception)
@@ -171,7 +171,7 @@ namespace Aspidiftra
 		/// <param name="fit">Current fitting constraints.</param>
 		/// <param name="fontSizeMeasurementsCache">Cache of all measurements, up till now.</param>
 		/// <returns>The positioned text collection.</returns>
-		private PositionedTextCollection GetPositionedText(float fontSize, Fitting fit,
+		private PositionedTextCollection CalculatePositionedText(float fontSize, Fitting fit,
 			FontSizeMeasurementsCache fontSizeMeasurementsCache)
 		{
 			// Start by turning the watermark text into a set of tokens.
