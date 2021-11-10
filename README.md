@@ -28,7 +28,7 @@ var bannerWatermark = new BannerTextWatermark(
 	new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees))); // Angle of banner
 
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
-AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\BothWatermarked.pdf");
+AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
 ```
 
 ![Aspidiftra](/Media/watermarkedDocument.png?raw=true)
