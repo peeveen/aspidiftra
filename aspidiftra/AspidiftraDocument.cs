@@ -100,8 +100,10 @@ namespace Aspidiftra
 			// elements to apply to each appropriate page. We will only ask the watermark to do
 			// this once per unique page size.
 			var pagesAndWatermarksBySize =
-				_pageNumbersBySize.Where(kvp => kvp.Value.Intersect(applicablePageNumbers).Any())
-					.Select(kvp => (kvp.Value.Intersect(applicablePageNumbers).ToArray(), watermark.GetWatermarkElements(kvp.Key)));
+				_pageNumbersBySize.Select(kvp =>
+						(PageNumbers: kvp.Value.Intersect(applicablePageNumbers).ToArray(), PageSize: kvp.Key))
+					.Where(tuple => tuple.PageNumbers.Any())
+					.Select(tuple => (tuple.PageNumbers, watermark.GetWatermarkElements(tuple.PageSize)));
 			// Now apply those watermark elements to each appropriate page.
 			foreach (var (pageNumbers, watermarkElements) in pagesAndWatermarksBySize)
 			foreach (var watermarkElement in watermarkElements)
