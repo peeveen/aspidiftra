@@ -73,6 +73,7 @@ doc.ApplyWatermark(rightPageEdgeWatermark);
 doc.Save("C:\\Watermarked.pdf");
 ```
 ![Aspidiftra](/Media/watermarkedDocument2.png?raw=true)
+
 # Other features
 * All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
 * Sizes (font sizes, margin sizes) can be specified as absolute or relative to page dimensions.
