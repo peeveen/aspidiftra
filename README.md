@@ -1,7 +1,7 @@
 # aspidiftra
 PDF text watermarking library, for use with Aspose PDF.
 
-![Uncle](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/uncle.jpg)
+![Uncle](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/watermarkedDocument1.png)
 
 * Targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
 * Arbitrary minimum version of Aspose PDF is 20.12. Standard Aspose licensing restrictions apply.
