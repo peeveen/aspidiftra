@@ -32,7 +32,8 @@ var bannerWatermark = new BannerTextWatermark(
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
 ```
-![Aspidiftra1](/Media/watermarkedDocument1.png?raw=true)
+![AspidiftraSample1](/Media/watermarkedDocument1.png)
+
 ```
 var impactFont = new Font("Impact", FontStyles.Bold, new Size(.045f, Sizing.RelativeToShorterSide));
 var courierFont = new Font("Courier New", FontStyles.Regular, new Size(.025f, Sizing.RelativeToWidth));
@@ -72,7 +73,7 @@ doc.ApplyWatermark(topPageEdgeWatermark);
 doc.ApplyWatermark(rightPageEdgeWatermark);
 doc.Save("C:\\Watermarked.pdf");
 ```
-![Aspidiftra2](/Media/watermarkedDocument2.png?raw=true)
+![AspidiftraSample2](/Media/watermarkedDocument2.png)
 
 # Other features
 * All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
