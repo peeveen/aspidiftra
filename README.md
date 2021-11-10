@@ -32,6 +32,3 @@ AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.p
 ```
 
 ![Aspidiftra](/Media/watermarkedDocument.png?raw=true)
-
-# TODO
-* Add a more intelligent mechanism for font size reduction.
