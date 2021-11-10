@@ -31,7 +31,6 @@ var bannerWatermark = new BannerTextWatermark(
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
 ```
-![AspidiftraSampleX](https://i.imgur.com/Aiyw67q.png)
 ![AspidiftraSample1](/media/watermarkedDocument1.png)
 ```
 var impactFont = new Font("Impact", FontStyles.Bold, new Size(.045f, Sizing.RelativeToShorterSide));
