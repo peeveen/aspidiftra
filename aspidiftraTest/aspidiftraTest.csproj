@@ -21,8 +21,4 @@
     <ProjectReference Include="..\aspidiftra\Aspidiftra.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="OutputPDFs\" />
-  </ItemGroup>
-
 </Project>

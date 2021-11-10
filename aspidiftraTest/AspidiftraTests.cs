@@ -27,7 +27,6 @@ namespace AspidiftraTest
 		private const string OutputPdfsFolder = "..\\..\\..\\OutputPDFs";
 		private const string AsposeLicenseFolder = "..\\..\\..\\AsposeLicense";
 		private const string AsposeLicenseFilename = "Aspose.Total.lic.xml";
-		private const string ConcatenatedPdfFilename = "ConcatenatedTestFiles.pdf";
 
 		private const string Simple = "01_Simple_1191_842.pdf";
 		private const string CropBox = "02_CropBox_800_400.pdf";
@@ -42,6 +41,7 @@ namespace AspidiftraTest
 		private const string DigitalSignature = "08_DigitalSignature_612_792.pdf";
 		private const string LoremIpsum = "09_LoremIpsum.pdf";
 		private const string Square720Pages = "10_Square720Pages.pdf";
+		private const string DifferentPageSizes = "11_DifferentPageSizes.pdf";
 
 		[SetUp]
 		public void Setup()
@@ -147,7 +147,7 @@ namespace AspidiftraTest
 		[Order(2)]
 		public void ApplyPageEdgeWatermark()
 		{
-			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
+			var testPdfPath = Path.Join(TestPdfsFolder, DifferentPageSizes);
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "PageEdgeWatermarked.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Red, 0.6f, watermarkFont);
@@ -166,7 +166,7 @@ namespace AspidiftraTest
 		[Order(2)]
 		public void ApplyBannerWatermark()
 		{
-			var testPdfPath = Path.Join(OutputPdfsFolder, ConcatenatedPdfFilename);
+			var testPdfPath = Path.Join(TestPdfsFolder, DifferentPageSizes);
 			var outputPdfPath = Path.Join(OutputPdfsFolder, "BannerWatermarked.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Regular, new Size(.035f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Green, 0.6f, watermarkFont);
