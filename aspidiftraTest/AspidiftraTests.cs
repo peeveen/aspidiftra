@@ -158,8 +158,6 @@ namespace AspidiftraTest
 				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {pageEdgeWatermark}, outputPdfPath);
-
-			// TODO: Test the output, somehow?
 		}
 
 		[Test]
@@ -177,7 +175,6 @@ namespace AspidiftraTest
 				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {bannerWatermark}, outputPdfPath);
-			// TODO: Test the output, somehow?
 		}
 
 		[Test]
