@@ -172,7 +172,14 @@ namespace Aspidiftra.Geometry
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Left, Right, Top, Bottom);
+			unchecked
+			{
+				var hashCode = Left.GetHashCode();
+				hashCode = (hashCode * 397) ^ Bottom.GetHashCode();
+				hashCode = (hashCode * 397) ^ Right.GetHashCode();
+				hashCode = (hashCode * 397) ^ Top.GetHashCode();
+				return hashCode;
+			}
 		}
 	}
 }

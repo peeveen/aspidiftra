@@ -18,7 +18,7 @@ namespace Aspidiftra.Geometry
 		/// <param name="name">Name of the argument.</param>
 		internal static void ValidateArgument(double value, string name)
 		{
-			if (!double.IsFinite(value))
+			if (double.IsInfinity(value) || double.IsNaN(value))
 				throw new ArgumentException("Value must be a normal finite number.", name);
 		}
 	}

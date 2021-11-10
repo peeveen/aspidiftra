@@ -320,7 +320,10 @@ namespace Aspidiftra.Geometry
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Value, (int) Units);
+			unchecked
+			{
+				return (Value.GetHashCode() * 397) ^ (int) Units;
+			}
 		}
 	}
 }

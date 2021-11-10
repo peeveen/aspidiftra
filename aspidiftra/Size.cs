@@ -17,7 +17,7 @@ namespace Aspidiftra
 		/// <param name="sizing">How the size value should be interpreted.</param>
 		public Size(float size, Sizing sizing)
 		{
-			if (!float.IsFinite(size))
+			if (float.IsInfinity(size) || float.IsNaN(size))
 				throw new ArgumentException("Size value must be a normal finite number.", nameof(size));
 			_size = size;
 			_sizing = sizing;

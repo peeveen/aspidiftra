@@ -72,10 +72,10 @@ namespace Aspidiftra.Geometry
 		}
 
 		/// <summary>
-		/// Calculates the distance from this point to the given point.
+		///   Calculates the distance from this point to the given point.
 		/// </summary>
 		/// <param name="otherPoint">Other point.</param>
-		/// <returns>Distance from this point to <paramref name="otherPoint"/></returns>
+		/// <returns>Distance from this point to <paramref name="otherPoint" /></returns>
 		public double GetDistanceFrom(Point otherPoint)
 		{
 			var xDiff = X - otherPoint.X;
@@ -94,7 +94,10 @@ namespace Aspidiftra.Geometry
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(X, Y);
+			unchecked
+			{
+				return (X.GetHashCode() * 397) ^ Y.GetHashCode();
+			}
 		}
 	}
 }
