@@ -145,18 +145,25 @@ namespace Aspidiftra
 		private PositionedTextCollection GrowToBestFit(PositionedTextCollection positionedTextCollection,
 			FontSizeMeasurementsCache fontSizeMeasurementsCache)
 		{
+			var fontSizeDelta = MinimumFontSizeDelta;
 			for (;;)
 				try
 				{
 					// Tell the algorithm to use Fitting.None (no shrinking, no wrapping), so it will
 					// throw an exception as soon as the text does not fit.
-					positionedTextCollection = CalculatePositionedText(positionedTextCollection.FontSize + MinimumFontSizeDelta,
+					positionedTextCollection = CalculatePositionedText(positionedTextCollection.FontSize + fontSizeDelta,
 						Fitting.None, fontSizeMeasurementsCache);
+					// Okay, so that still fits. Let's try a bigger jump next time.
+					fontSizeDelta *= 2.0f;
 				}
 				catch (Exception)
 				{
-					// Any exception, and we're reverting back to the last successful fit.
-					break;
+					// Okay, it no longer fits. If we made a jump bigger than the minimum delta, go
+					// back to the minimum delta. Otherwise, we're as big as we can be, so we'll just
+					// settle for the last successful fit.
+					if (Math.Abs(fontSizeDelta - MinimumFontSizeDelta) < float.Epsilon)
+						break;
+					fontSizeDelta = MinimumFontSizeDelta;
 				}
 
 			return positionedTextCollection;

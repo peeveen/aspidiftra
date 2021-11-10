@@ -101,7 +101,7 @@ namespace Aspidiftra
 			// this once per unique page size.
 			var pagesAndWatermarksBySize =
 				_pageNumbersBySize.Where(kvp => kvp.Value.Intersect(applicablePageNumbers).Any())
-					.Select(kvp => (kvp.Value, watermark.GetWatermarkElements(kvp.Key)));
+					.Select(kvp => (kvp.Value.Intersect(applicablePageNumbers).ToArray(), watermark.GetWatermarkElements(kvp.Key)));
 			// Now apply those watermark elements to each appropriate page.
 			foreach (var (pageNumbers, watermarkElements) in pagesAndWatermarksBySize)
 			foreach (var watermarkElement in watermarkElements)
@@ -109,7 +109,7 @@ namespace Aspidiftra
 				var formattedText = watermarkElement.FormattedText;
 				var stamp = new Stamp
 				{
-					Pages = pageNumbers.ToArray(),
+					Pages = pageNumbers,
 					// Aspose only accepts angles in degrees.
 					Rotation = (float) watermarkElements.Angle.ToDegrees().Value,
 					IsBackground = watermarkElements.IsBackground,

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace AspidiftraTest
 		private const string FivePages = "07_FivePages_841.98_595.38.pdf";
 		private const string DigitalSignature = "08_DigitalSignature_612_792.pdf";
 		private const string LoremIpsum = "09_LoremIpsum.pdf";
+		private const string Square720Pages = "10_Square720Pages.pdf";
 
 		[SetUp]
 		public void Setup()
@@ -218,7 +220,32 @@ namespace AspidiftraTest
 				new Size(0.08f, Sizing.RelativeToAverageSideLength),
 				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
 
-			var watermarks = new IWatermark[] { pageEdgeWatermark, bannerWatermark };
+			var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
+			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+		}
+
+		[Test]
+		[Order(2)]
+		public void TestBannerRotation()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, Square720Pages);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "BannerRotationTest.pdf");
+			var watermarkFont = new Font("Helvetica", FontStyles.Regular, new Size(.035f, Sizing.RelativeToDiagonalSize));
+			var watermarkAppearance = new Appearance(Color.Blue, 0.6f, watermarkFont);
+			var watermarks = new List<IWatermark>();
+			for (var n = 1; n <= 720; ++n)
+			{
+				var angle = (n-1) * 0.5;
+				var requiredPageNumbers = new[] {n}.ToImmutableHashSet();
+				var bannerWatermark = new BannerTextWatermark(
+					$"Banner at {angle} degrees",
+					watermarkAppearance, Justification.Centre, Fitting.Shrink | Fitting.Grow,
+					new Size(0.08f, Sizing.RelativeToAverageSideLength),
+					new CustomBannerAngle(new Angle(angle, AngleUnits.Degrees)),
+					pages => requiredPageNumbers);
+				watermarks.Add(bannerWatermark);
+			}
+
 			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
 		}
 	}
