@@ -1,8 +1,8 @@
 # aspidiftra
 PDF text watermarking library, for use with Aspose PDF.
 
-* Currently targets .NET Core 3.1, compatible with .NET Framework apps.
-* Arbitrary minimum version of Aspose PDF is 20.10.
+* Currently targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
+* Arbitrary minimum version of Aspose PDF is 20.12.
 * If you attempt to use this extensively without a valid Aspose license, you will probably hit errors.
 
 # Example usage
