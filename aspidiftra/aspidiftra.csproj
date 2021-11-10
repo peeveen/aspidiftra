@@ -6,6 +6,16 @@
 		<RootNamespace>Aspidiftra</RootNamespace>
 		<LangVersion>8.0</LangVersion>
 		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Steven Frew</Authors>
+		<Company />
+		<Product />
+		<Description>PDF text watermarking library, for use with Aspose PDF.NET</Description>
+		<PackageProjectUrl>https://github.com/peeveen/aspidiftra</PackageProjectUrl>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageIconUrl />
+		<RepositoryUrl>https://github.com/peeveen/aspidiftra</RepositoryUrl>
+		<RepositoryType>Git</RepositoryType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -17,6 +27,13 @@
 	<ItemGroup>
 		<PackageReference Include="Aspose.PDF" Version="20.12.0" />
 		<PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\media\icon.png">
+	    <Pack>True</Pack>
+	    <PackagePath></PackagePath>
+	  </None>
 	</ItemGroup>
 
 </Project>
