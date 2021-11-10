@@ -14,17 +14,17 @@ var pageEdgeWatermark = new PageEdgeTextWatermark(
 	watermarkRedAppearance, // Cosmetic appearance of the text
 	PageEdgePosition.Bottom, // Where to place the watermark
 	Justification.Centre, // Justification of text
-	Fitting.Wrap | Fitting.Shrink, // How to best fit the text if it bigger than the page.
+	Fitting.Wrap | Fitting.Shrink, // Permitted best-fitting constraints
 	new Size(0.03f, Sizing.RelativeToAverageSideLength), // Margin
 	true); // Reverse the direction of the text
 
 var bannerWatermark = new BannerTextWatermark(
-	"This is my banner text.",
-	watermarkGreenAppearance,
-	Justification.Centre,
-	Fitting.Wrap | Fitting.Shrink | Fitting.Grow,
-	new Size(0.08f, Sizing.RelativeToAverageSideLength),
-	new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
+	"This is my banner text.", // Watermark text
+	watermarkGreenAppearance, // Cosmetic appearance of the text
+	Justification.Centre, // Justification of the text
+	Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted best-fitting constraints
+	new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
+	new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees))); // Angle of banner
 
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\BothWatermarked.pdf");
