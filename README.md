@@ -12,7 +12,7 @@ PDF text watermarking library, for use with Aspose PDF.
 * If you try to apply a watermark that cannot be fit onto the page, an `InsufficientSpaceException` will be thrown unless you use the `Fitting.Overflow` best-fit constraint.
 * Position of watermarks can be offset by a user-defined amount. This is applied after all fitting logic.
 
-# Example usages
+# Examples
 ```
 var fontSize = new Size(.025f, Sizing.RelativeToDiagonalSize);
 var watermarkFont = new Font("Helvetica", FontStyles.Italic, fontSize);
