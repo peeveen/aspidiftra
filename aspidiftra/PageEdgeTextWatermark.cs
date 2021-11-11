@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Aspidiftra.Geometry;
 
 namespace Aspidiftra
@@ -70,7 +72,7 @@ namespace Aspidiftra
 		/// <returns>A suitable text slot calculator.</returns>
 		protected override ITextSlotCalculator GetTextSlotCalculator(PageSize pageSize)
 		{
-			return new PageEdgeTextSlotCalculator(pageSize, _pageEdgePosition, _angle, _reverseDirection);
+			return new PageEdgeTextSlotCalculator(pageSize, _pageEdgePosition, _angle, Fit, _reverseDirection);
 		}
 
 		/// <summary>
@@ -82,6 +84,11 @@ namespace Aspidiftra
 		protected override Angle GetAngle(PageSize pageSize)
 		{
 			return _angle;
+		}
+
+		protected override IEnumerable<MeasuredString> SelectOverflowStrings(IEnumerable<MeasuredString> strings, int availableLines)
+		{
+			return strings.Take(availableLines);
 		}
 	}
 }

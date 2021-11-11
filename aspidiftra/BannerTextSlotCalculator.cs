@@ -17,6 +17,11 @@ namespace Aspidiftra
 		private readonly Angle _angle;
 
 		/// <summary>
+		///   The fitting constraints.
+		/// </summary>
+		private readonly Fitting _fit;
+
+		/// <summary>
 		///   Size of the page that we are putting the banner on.
 		/// </summary>
 		private readonly PageSize _pageSize;
@@ -31,11 +36,13 @@ namespace Aspidiftra
 		///   Constructor.
 		/// </summary>
 		/// <param name="pageSize">Size of the page that the banner will be on.</param>
+		/// <param name="fit">The current fitting constraints.</param>
 		/// <param name="angle">Desired angle of banner.</param>
-		internal BannerTextSlotCalculator(PageSize pageSize, Angle angle)
+		internal BannerTextSlotCalculator(PageSize pageSize, Fitting fit, Angle angle)
 		{
 			_pageSize = pageSize;
 			_angle = angle;
+			_fit = fit;
 			_reversedAngle = angle.Reverse();
 		}
 
@@ -139,8 +146,29 @@ namespace Aspidiftra
 			return slots.ToImmutableList();
 		}
 
+		private IImmutableList<Point> GetIntersectionPoints(Line line, IImmutableList<Line> pageEdges)
+		{
+			// Find where the text line crosses the page edges.
+			// There should only ever be two of these.
+			// If the line is running from corner to corner, we might get more than 2 points back,
+			// so remove non-unique ones.
+			var intersectionPoints = pageEdges.Select(edge => edge.GetIntersectionPoint(line))
+				.Where(point => _fit.HasOverflow() || point != null && _pageSize.Contains(point))
+				.Distinct()
+				.Cast<Point>();
+
+			// If we're allowing overflow lines, then we might get four unique points back.
+			// Choose the two that are closest to the text line point.
+			if (_fit.HasOverflow())
+				intersectionPoints = intersectionPoints
+					.OrderBy(point => point.GetDistanceFrom(line.Point))
+					.Take(2);
+
+			return intersectionPoints.ToImmutableList();
+		}
+
 		/// <summary>
-		/// Calculates a text slot on the given line.
+		///   Calculates a text slot on the given line.
 		/// </summary>
 		/// <param name="textLine">Line that the resulting text slot must be on.</param>
 		/// <param name="offset">The current text line offset.</param>
@@ -149,10 +177,32 @@ namespace Aspidiftra
 		/// <returns>The text slot for the given line, or null if no text slot can fit on this line.</returns>
 		private TextSlot? CalculateSlot(Line textLine, Offset offset, IImmutableList<Line> pageLines, double slotHeight)
 		{
-			// Find where the text line crosses the page edges.
-			// There should only ever be two of these.
-			var intersectionPoints = pageLines.Select(line => line.GetIntersectionPoint(textLine))
-				.Where(point => point != null && _pageSize.Contains(point)).Cast<Point>();
+			var intersectionPoints = GetIntersectionPoints(textLine, pageLines);
+			var offsetTextLine = new Line(textLine.Point + offset, textLine.Gradient);
+			var offsetIntersectionPoints = GetIntersectionPoints(offsetTextLine, pageLines);
+			// If all the intersection points are off the page, then the line is entirely off the page,
+			// and is therefore useless. Remember if these collections are empty, All will return true.
+			var intersectionPointsAreOffPage = intersectionPoints.All(point => !_pageSize.Contains(point));
+			var offsetIntersectionPointsAreOffPage = offsetIntersectionPoints.All(point => !_pageSize.Contains(point));
+			if (intersectionPointsAreOffPage && offsetIntersectionPointsAreOffPage)
+				return null;
+
+			// If we're calculating overflow slots, then we have enough info at this point.
+			if (_fit.HasOverflow())
+			{
+				// The text line is not on the page, but the offset text line is.
+				// So we'll remove the offset from the offset text line intersection points, and
+				// use them.
+				if (intersectionPointsAreOffPage)
+					intersectionPoints = offsetIntersectionPoints.Select(point => point - offset).ToImmutableList();
+				return CalculateTextSlotFromIntersectionPoints(intersectionPoints[0], intersectionPoints[1], slotHeight);
+			}
+
+			// If calculating normal slots, we need to tighten things up a bit.
+			// Both the text line and the offset text line need to be on the page for normal slots.
+			if (intersectionPointsAreOffPage || offsetIntersectionPointsAreOffPage)
+				return null;
+
 			var textSlotStartAndEndPoints = intersectionPoints.Select(point =>
 			{
 				// OK, offset those two intersection points by the font size offset.
@@ -161,18 +211,6 @@ namespace Aspidiftra
 				if (_pageSize.Contains(offsetPoint))
 					return point;
 				// However, if it went off the page, we need to adjust things.
-				// Let's build a line with the same angle as the text line, but using
-				// the off-page intersection point.
-				var offsetLine = new Line(offsetPoint, _angle);
-				// Now find the intersection points between this line and the page edges.
-				// There may be 2, or there may be zero.
-				var offsetIntersectionPoints = pageLines.Select(line => line.GetIntersectionPoint(offsetLine))
-					.Where(p => p != null && _pageSize.Contains(p))
-					.Cast<Point>()
-					.ToList();
-				// If there aren't any, then there's no room for another slot.
-				if (!offsetIntersectionPoints.Any())
-					return null;
 				// Find the shortest distance from the offset point (which we
 				// know is off the page) to the point where the offset line
 				// intersected a page edge.
@@ -188,19 +226,29 @@ namespace Aspidiftra
 				var pointAdjustedByAngle = point + readjustmentOffset;
 				var pointAdjustedByReversedAngle = point + readjustmentOffsetReversed;
 				return _pageSize.Contains(pointAdjustedByAngle) ? pointAdjustedByAngle : pointAdjustedByReversedAngle;
-			}).Where(point => point != null).Cast<Point>().ToImmutableList();
-			// If the line is running from corner to corner, we might get more than 2 points back.
-			// Remove non-unique ones.
-			textSlotStartAndEndPoints = textSlotStartAndEndPoints.Distinct().ToImmutableList();
+			}).Where(point => point != null).ToImmutableList();
+
 			// If we didn't get a start AND end point back, then there is no room for the slot.
-			if (!(textSlotStartAndEndPoints is {Count: 2}))
-				return null;
+			return textSlotStartAndEndPoints is {Count: 2}
+				? CalculateTextSlotFromIntersectionPoints(textSlotStartAndEndPoints[0], textSlotStartAndEndPoints[1],
+					slotHeight)
+				: null;
+		}
+
+		/// <summary>
+		///   Given two points that make up the line for a text slot, figure out what order they should
+		///   be in, and construct a text slot from them.
+		/// </summary>
+		/// <param name="firstPoint">First point.</param>
+		/// <param name="secondPoint">Second point.</param>
+		/// <param name="slotHeight">Height of text slot.</param>
+		/// <returns>A correct text slot.</returns>
+		private TextSlot CalculateTextSlotFromIntersectionPoints(Point firstPoint, Point secondPoint, double slotHeight)
+		{
 			// OK, so we have two valid points. We're not entirely sure which one is the start point
 			// though.
 			// Find the angles between the two points in both directions. Return them in the order
 			// that is closest to the desired banner angle.
-			var firstPoint = textSlotStartAndEndPoints[0];
-			var secondPoint = textSlotStartAndEndPoints[1];
 			var offsetFromFirstToSecond = secondPoint - firstPoint;
 			var offsetFromSecondToFirst = firstPoint - secondPoint;
 			var angleFromFirstToSecond =

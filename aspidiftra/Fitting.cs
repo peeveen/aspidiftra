@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Aspidiftra
 {
 	/// <summary>
-	/// Flags that can be used to specify how a watermark should fit the page.
-	/// These can be combined with a bitwise OR.
+	///   Flags that can be used to specify how a watermark should fit the page.
+	///   These can be combined with a bitwise OR.
 	/// </summary>
 	[Flags]
 	public enum Fitting
@@ -41,7 +39,12 @@ namespace Aspidiftra
 		/// <summary>
 		///   Text can be made larger to fit the given area as closely as possible.
 		/// </summary>
-		Grow = 4
+		Grow = 4,
+
+		/// <summary>
+		///   Text is allowed to overflow the page boundaries.
+		/// </summary>
+		Overflow = 8
 	}
 
 	public static class FittingExtensions
@@ -66,9 +69,9 @@ namespace Aspidiftra
 			return fitting.Has(Fitting.Grow);
 		}
 
-		public static Fitting Remove(this Fitting fitting, Fitting flagsToRemove)
+		public static bool HasOverflow(this Fitting fitting)
 		{
-			return fitting & ~flagsToRemove;
+			return fitting.Has(Fitting.Overflow);
 		}
 	}
 }

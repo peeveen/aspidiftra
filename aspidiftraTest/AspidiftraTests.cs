@@ -37,10 +37,38 @@ namespace AspidiftraTest
 		private const string Portrait = "06_Portrait_750_1200.pdf";
 		private const string FivePages = "07_FivePages_841.98_595.38.pdf";
 		private const string DigitalSignature = "08_DigitalSignature_612_792.pdf";
-		private const string LoremIpsum = "09_LoremIpsum.pdf";
-		private const string Square720Pages = "10_Square720Pages.pdf";
+		private const string LoremIpsum = "09_LoremIpsum_595_841.pdf";
+		private const string Square720Pages = "10_Square720Pages_600_600.pdf";
 		private const string DifferentPageSizes = "11_DifferentPageSizes.pdf";
 
+		private const string SeenAndNotSeenLyrics = "He would see faces in movies, on T.V., in magazines, and in books,\n" +
+		                                            "He thought that some of these faces might be right for him,\n" +
+		                                            "And through the years, by keeping an ideal facial structure fixed in his mind,\n" +
+		                                            "Or somewhere in the back of his mind,\n" +
+		                                            "That he might, by force of will, cause his face to approach those of his ideal,\n" +
+		                                            "The change would be very subtle,\n" +
+		                                            "It might take ten years or so,\n" +
+		                                            "Gradually his face would change its shape,\n" +
+		                                            "A more hooked nose,\n" +
+		                                            "Wider, thinner lips,\n" +
+		                                            "Beady eyes,\n" +
+		                                            "A larger forehead,\n" +
+		                                            "He imagined that this was an ability he shared with most other people,\n" +
+		                                            "They had also molded their faces according to some ideal,\n" +
+		                                            "Maybe they imagined that their new face would better suit their personality,\n" +
+		                                            "Or maybe they imagined that their personality would be forced to change,\n" +
+		                                            "To fit the new appearance,\n" +
+		                                            "This is why first impressions are often correct,\n" +
+		                                            "Although some people might have made mistakes,\n" +
+		                                            "They may have arrived at an appearance that bears no relationship to them,\n" +
+		                                            "They may have picked an ideal appearance based on some childish whim,\n" +
+		                                            "Or momentary impulse,\n" +
+		                                            "Some may have gotten half way there, and then changed their minds,\n" +
+		                                            "He wonders if he too might have made a similar mistake.";
+
+		/// <summary>
+		///   Applies the Aspose license, if available.
+		/// </summary>
 		[SetUp]
 		public void Setup()
 		{
@@ -52,6 +80,9 @@ namespace AspidiftraTest
 			}
 		}
 
+		/// <summary>
+		///   Some basic tests to ensure that the Line class is working correctly.
+		/// </summary>
 		[Test]
 		[Order(0)]
 		public void LineTests()
@@ -78,12 +109,15 @@ namespace AspidiftraTest
 			}
 		}
 
+		/// <summary>
+		///   Some basic tests to ensure that StringTokenCollection class works properly.
+		/// </summary>
 		[Test]
 		[Order(0)]
 		public void TextSplitTest()
 		{
 			// ReSharper disable line StringLiteralTypo
-			var splitTestText = "   This is a     tést of\nthe sssssssssssssstring   splitting code\n\n  .";
+			var splitTestText = "\n   This is a     tést of\nthe sssssssssssssstring   splitting code\n\n  .";
 			var tokens = new StringTokenCollection(splitTestText).ToList();
 			Assert.AreEqual(20, tokens.Count);
 			var tenthToken = tokens[9];
@@ -92,6 +126,9 @@ namespace AspidiftraTest
 			Assert.IsTrue(fourteenthToken.String == "   " && fourteenthToken.Type == StringToken.TokenType.Whitespace);
 		}
 
+		/// <summary>
+		///   Some basic tests to ensure that the Angle class works properly.
+		/// </summary>
 		[Test]
 		[Order(0)]
 		public void AngleTests()
@@ -123,8 +160,16 @@ namespace AspidiftraTest
 			Assert.AreEqual(Math.PI * (4.0 / 3.0), yReversedRadians.Value, GeometricTolerance);
 			var reversedRadians = largeRadiansAngle.Reverse();
 			Assert.AreEqual(Math.PI * (2.0 / 3.0), reversedRadians.Value, GeometricTolerance);
+
+			var turned90Clockwise = reversedRadians.Rotate90(true);
+			Assert.AreEqual(Math.PI * (1.0 / 6.0), turned90Clockwise.Value, GeometricTolerance);
+			var turned90Anticlockwise = reversedRadians.Rotate90(false);
+			Assert.AreEqual(Math.PI * (7.0 / 6.0), turned90Anticlockwise.Value, GeometricTolerance);
 		}
 
+		/// <summary>
+		///   Some basic tests to make sure that the PageSize class works properly.
+		/// </summary>
 		[Test]
 		[Order(0)]
 		public void PageSizeFunctions()
@@ -141,12 +186,15 @@ namespace AspidiftraTest
 			Assert.AreEqual(diagonalAngleRadians, new PageSize(rect.Width, rect.Height).BottomLeftToTopRightAngle());
 		}
 
+		/// <summary>
+		///   Applies a long banner watermark at a jaunty angle.
+		/// </summary>
 		[Test]
 		[Order(2)]
 		public void ApplyPageEdgeWatermark()
 		{
 			var testPdfPath = Path.Join(TestPdfsFolder, DifferentPageSizes);
-			var outputPdfPath = Path.Join(OutputPdfsFolder, "PageEdgeWatermarked.pdf");
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "ReversedPageEdgeWatermark.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Red, 0.6f, watermarkFont);
 			var pageEdgeWatermark = new PageEdgeTextWatermark(
@@ -163,11 +211,11 @@ namespace AspidiftraTest
 		public void ApplyBannerWatermark()
 		{
 			var testPdfPath = Path.Join(TestPdfsFolder, DifferentPageSizes);
-			var outputPdfPath = Path.Join(OutputPdfsFolder, "BannerWatermarked.pdf");
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "LongBannerWatermark.pdf");
 			var watermarkFont = new Font("Helvetica", FontStyles.Regular, new Size(.035f, Sizing.RelativeToDiagonalSize));
 			var watermarkAppearance = new Appearance(Color.Green, 0.6f, watermarkFont);
 			var bannerWatermark = new BannerTextWatermark(
-				"This is a banner watermark test that I sincerely hope\nwill execute successfully, mainly because the maths involved was bloody difficult.",
+				"This is a banner watermark test that I sincerely hope\nwill execute successfully, mainly because the maths involved was bloody difficult, and I haven't done any of that sort of thing since school.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.08f, Sizing.RelativeToAverageSideLength),
 				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
@@ -177,41 +225,10 @@ namespace AspidiftraTest
 
 		[Test]
 		[Order(2)]
-		public void ApplyBoth()
+		public void ApplyBothTypesOfWatermark()
 		{
 			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
-			var outputPdfPath = Path.Join(OutputPdfsFolder, "BothWatermarked.pdf");
-			var watermarkFont = new Font("Helvetica", FontStyles.Italic, new Size(.025f, Sizing.RelativeToDiagonalSize));
-			var watermarkRedAppearance = new Appearance(Color.Red, 1.0f, watermarkFont);
-			var watermarkGreenAppearance = new Appearance(Color.Green, 0.8f, watermarkFont);
-
-			var pageEdgeWatermark = new PageEdgeTextWatermark(
-				"This is a page edge watermark", // Watermark text
-				watermarkRedAppearance, // Cosmetic appearance of the text
-				PageEdgePosition.Bottom, // Where to place the watermark
-				Justification.Centre, // Justification of text
-				Fitting.Wrap | Fitting.Shrink, // How to best fit the text if it bigger than the page.
-				new Size(0.03f, Sizing.RelativeToAverageSideLength), // Margin
-				true); // Reverse the direction of the text
-
-			var bannerWatermark = new BannerTextWatermark(
-				"This is my banner text.",
-				watermarkGreenAppearance,
-				Justification.Centre,
-				Fitting.Wrap | Fitting.Shrink | Fitting.Grow,
-				new Size(0.08f, Sizing.RelativeToAverageSideLength),
-				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
-
-			var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
-			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
-		}
-
-		[Test]
-		[Order(2)]
-		public void ApplyBoth2()
-		{
-			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
-			var outputPdfPath = Path.Join(OutputPdfsFolder, "BothWatermarked2.pdf");
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "BothTypesOfWatermark.pdf");
 			var impactFont = new Font("Impact", FontStyles.Bold, new Size(.045f, Sizing.RelativeToShorterSide));
 			var courierFont = new Font("Courier New", FontStyles.Regular, new Size(.025f, Sizing.RelativeToWidth));
 			var blueVioletImpact = new Appearance(Color.BlueViolet, 0.75f, impactFont); // 75% opacity
@@ -242,7 +259,7 @@ namespace AspidiftraTest
 				Justification.Centre, // Justification
 				Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted fitting constraints.
 				new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
-				new BottomLeftToTopRightBannerAngle()); // Angle of banner
+				BannerTextWatermark.BottomLeftToTopRightAngle); // Angle of banner
 
 			using var doc = new AspidiftraDocument(testPdfPath);
 			doc.ApplyWatermark(bannerWatermark);
@@ -251,6 +268,10 @@ namespace AspidiftraTest
 			doc.Save(outputPdfPath);
 		}
 
+		/// <summary>
+		///   Applies a banner watermark to each page of a 720 page document,
+		///   rotating it by 0.5 degrees each time.
+		/// </summary>
 		[Test]
 		[Order(2)]
 		public void TestBannerRotation()
@@ -274,6 +295,113 @@ namespace AspidiftraTest
 			}
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+		}
+
+		/// <summary>
+		///   Applies a banner watermark with a MASSIVE font size.
+		///   Overflow is allowed.
+		/// </summary>
+		[Test]
+		[Order(2)]
+		public void HugeOverflowBannerWatermark()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "HugeOverflowBanner.pdf");
+			var watermarkFont = new Font("Impact", FontStyles.Bold, new Size(0.66f, Sizing.RelativeToWidth));
+			var watermarkAppearance = new Appearance(Color.Purple, 0.6f, watermarkFont);
+			var watermarks = new List<IWatermark>();
+
+			var bannerWatermark = new BannerTextWatermark(
+				"BOOM SHAKALAK\nBOOM SHAKALAK\nBOOM SHAKALAK\nBOOM SHAKALAK\nBOOM SHAKALAK\nBOOM SHAKALAK",
+				watermarkAppearance,
+				Justification.Centre,
+				Fitting.Overflow,
+				new Size(0.04f, Sizing.RelativeToAverageSideLength),
+				BannerTextWatermark.BottomLeftToTopRightAngle);
+			watermarks.Add(bannerWatermark);
+
+			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+		}
+
+		/// <summary>
+		///   Applies a page edge watermark with a MASSIVE font size.
+		///   Overflow is allowed.
+		/// </summary>
+		[Test]
+		[Order(2)]
+		public void HugeOverflowPageEdgeWatermark()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "HugeOverflowPageEdge.pdf");
+			var watermarkFont = new Font("Impact", FontStyles.Bold, new Size(0.66f, Sizing.RelativeToWidth));
+			var watermarkAppearance = new Appearance(Color.Purple, 0.6f, watermarkFont);
+			var watermarks = new List<IWatermark>();
+
+			var pageEdgeWatermark = new PageEdgeTextWatermark(
+				"Pagans, Saints and Sages: The Angels Of Our Ages",
+				watermarkAppearance,
+				PageEdgePosition.Top,
+				Justification.Right,
+				Fitting.Overflow,
+				new Size(0.04f, Sizing.RelativeToAverageSideLength));
+			watermarks.Add(pageEdgeWatermark);
+			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+		}
+
+		/// <summary>
+		///   Applies a page edge watermark with a MASSIVE font size.
+		///   Overflow is allowed.
+		/// </summary>
+		[Test]
+		[Order(2)]
+		public void LotsOfLinesOverflowPageEdgeWatermark()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "LotsOfLinesOverflowPageEdge.pdf");
+			var watermarkFont = new Font("Impact", FontStyles.Bold, new Size(0.06f, Sizing.RelativeToHeight));
+			var watermarkAppearance = new Appearance(Color.Purple, 0.6f, watermarkFont);
+			var watermarks = new List<IWatermark>();
+
+			var pageEdgeWatermark = new PageEdgeTextWatermark(SeenAndNotSeenLyrics,
+				watermarkAppearance,
+				PageEdgePosition.Top,
+				Justification.Left,
+				Fitting.Overflow,
+				new Size(0.04f, Sizing.RelativeToAverageSideLength));
+			watermarks.Add(pageEdgeWatermark);
+			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+		}
+
+		/// <summary>
+		///   Applies a page edge watermark with a MASSIVE font size.
+		///   Overflow is allowed.
+		/// </summary>
+		[Test]
+		[Order(2)]
+		public void LotsOfLinesBannerWatermark()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, LoremIpsum);
+			var outputPdfPath = Path.Join(OutputPdfsFolder, "LotsOfLinesOverflowBanner.pdf");
+			var watermarkFont = new Font("Impact", FontStyles.Bold, new Size(0.06f, Sizing.RelativeToHeight));
+			var watermarkAppearance = new Appearance(Color.Purple, 0.6f, watermarkFont);
+			var watermarks = new List<IWatermark>();
+
+			var pageEdgeWatermark = new BannerTextWatermark(SeenAndNotSeenLyrics,
+				watermarkAppearance,
+				Justification.Left,
+				Fitting.Overflow,
+				new Size(0.04f, Sizing.RelativeToAverageSideLength),
+				new CustomBannerAngle(new Angle(12.3, AngleUnits.Degrees)));
+			watermarks.Add(pageEdgeWatermark);
+			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+		}
+
+		[Test]
+		[Order(2)]
+		public void GetDocumentSize()
+		{
+			var testPdfPath = Path.Join(TestPdfsFolder, Square720Pages);
+			new AspidiftraDocument(testPdfPath);
 		}
 	}
 }

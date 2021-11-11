@@ -15,12 +15,21 @@ namespace Aspidiftra
 		/// <summary>
 		///   Constructor.
 		/// </summary>
+		internal StringTokenCollection()
+		{
+			_tokens = new List<StringToken>();
+		}
+
+		/// <summary>
+		///   Constructor.
+		/// </summary>
 		/// <param name="stringToTokenize">Creates a token collection from the given string.</param>
 		internal StringTokenCollection(string stringToTokenize)
 		{
 			var tokens = new List<StringToken>();
 			// Platform-neutralize the string with regard to line breaks.
-			stringToTokenize = stringToTokenize.Replace("\r\n", "\n");
+			// Also remove leading or trailing whitespace.
+			stringToTokenize = stringToTokenize.Replace("\r\n", "\n").Trim();
 			var chars = stringToTokenize.ToCharArray();
 			var currentString = new StringBuilder();
 			StringToken.TokenType? currentTokenType = null;
@@ -54,10 +63,16 @@ namespace Aspidiftra
 		///   Constructs a token collection from the given set of tokens.
 		///   This collection is NOT normalized.
 		/// </param>
-		private StringTokenCollection(IEnumerable<StringToken> tokens)
+		internal StringTokenCollection(IEnumerable<StringToken> tokens)
 		{
 			_tokens = tokens;
 		}
+
+		/// <summary>
+		///   Could the string that would be created from this token collection
+		///   be split into multiple pieces?
+		/// </summary>
+		internal bool IsSplittable => _tokens.Count(token => token.Type == StringToken.TokenType.Text) > 1;
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
@@ -69,9 +84,45 @@ namespace Aspidiftra
 			return _tokens.GetEnumerator();
 		}
 
+		public static StringTokenCollection operator +(StringTokenCollection collection1, StringTokenCollection collection2)
+		{
+			var list = collection1._tokens.ToList();
+			list.AddRange(collection2._tokens);
+			return new StringTokenCollection(list);
+		}
+
+		/// <summary>
+		///   Returns multiple string token collections, representing each line that
+		///   this string token collection contains. The resulting collections are
+		///   guaranteed not to contain any line break tokens.
+		/// </summary>
+		/// <returns>Token collections representing lines of text.</returns>
+		internal IEnumerable<StringTokenCollection> GetLineCollections()
+		{
+			var tokenList = _tokens.ToList();
+			var lineBreakIndices = tokenList.Select((token, index) =>
+			{
+				if (token.Type == StringToken.TokenType.LineBreak)
+					return index;
+				return (int?) null;
+			}).Where(index => index != null).Cast<int>();
+			var collections = new List<StringTokenCollection>();
+			var startIndex = 0;
+			foreach (var lineBreakIndex in lineBreakIndices)
+			{
+				collections.Add(new StringTokenCollection(tokenList.GetRange(startIndex, lineBreakIndex - startIndex)));
+				startIndex = lineBreakIndex + 1;
+			}
+
+			collections.Add(new StringTokenCollection(tokenList.GetRange(startIndex, tokenList.Count - startIndex)));
+
+			return collections;
+		}
+
 		/// <summary>
 		///   Ensures that no consecutive pair of tokens are whitespace and line break by removing
-		///   the whitespace.
+		///   the whitespace. Also ensures that the collection does not start or end with
+		///   whitespace.
 		/// </summary>
 		/// <returns>Normalized collection.</returns>
 		internal StringTokenCollection Normalize()

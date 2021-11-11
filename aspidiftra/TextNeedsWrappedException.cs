@@ -8,11 +8,11 @@ namespace Aspidiftra
 	/// </summary>
 	internal class TextNeedsWrappedException : Exception
 	{
-		internal TextNeedsWrappedException(IEnumerable<string> wrappedStrings)
+		internal TextNeedsWrappedException(IEnumerable<StringTokenCollection> wrappedStrings)
 		{
 			WrappedStrings = wrappedStrings;
 		}
 
-		public IEnumerable<string> WrappedStrings { get; }
+		public IEnumerable<StringTokenCollection> WrappedStrings { get; }
 	}
 }

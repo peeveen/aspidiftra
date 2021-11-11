@@ -1,5 +1,4 @@
-﻿using System;
-using Aspidiftra.Geometry;
+﻿using Aspidiftra.Geometry;
 
 namespace Aspidiftra
 {
@@ -22,7 +21,15 @@ namespace Aspidiftra
 			Slot = slot;
 			_justification = justification;
 			TextFits = text.Length <= slot.Width;
+			EffectiveTextOrigin = CalculateEffectiveTextOrigin();
 		}
+
+		/// <summary>
+		///   The effective text origin is the point that we tell Aspose.Pdf to position the text at.
+		///   Due to how Aspose.Pdf does positioning of rotated text, this is not always the same as
+		///   the <see cref="TextSlot.TextOrigin"/> />.
+		/// </summary>
+		public Point EffectiveTextOrigin { get; }
 
 		/// <summary>
 		///   The text that has been allocated to the slot.
@@ -40,8 +47,8 @@ namespace Aspidiftra
 		internal bool TextFits { get; }
 
 		/// <summary>
-		/// Calculates the justification offset for this allocated text slot.
-		/// The offset will "push" the text along the slot by a certain amount.
+		///   Calculates the justification offset for this allocated text slot.
+		///   The offset will "push" the text along the slot by a certain amount.
 		/// </summary>
 		internal Offset JustificationOffset
 		{
@@ -66,10 +73,49 @@ namespace Aspidiftra
 					Justification.Left when leftJustifiedAlready => Offset.None,
 					Justification.Right when rightJustifiedAlready => Offset.None,
 					_ =>
-						new Offset(Math.Abs(spareSlotSpace * Slot.Angle.Cos), Math.Abs(spareSlotSpace * Slot.Angle.Sin)) *
+						new Offset(spareSlotSpace * Slot.Angle.Cos, spareSlotSpace * Slot.Angle.Sin) *
 						offsetMultiplier
 				};
 			}
+		}
+
+		/// <summary>
+		///   Calculates the effective text origin.
+		/// </summary>
+		/// <returns>The effective text origin.</returns>
+		private Point CalculateEffectiveTextOrigin()
+		{
+			// Aspose.Pdf is kinda weird with how it deals with the coordinates for
+			// rotated text. You don't tell it the position where, say, the lower-left
+			// corner of the first character of the text should be. Instead, you need
+			// to imagine the orthogonal bounding box that contains the rotated text,
+			// and tell it the lower left corner of that.
+			// So let's calculate where that would be!
+			var xOffset = 0.0;
+			var yOffset = 0.0;
+			var angle = Slot.Angle;
+			var height = Slot.Height;
+			var width = Text.Length;
+			if (angle <= Angle.Degrees90)
+			{
+				xOffset = height * -angle.Sin;
+			}
+			else if (angle <= Angle.Degrees180)
+			{
+				xOffset = width * angle.Cos + height * -angle.Sin;
+				yOffset = height * angle.Cos;
+			}
+			else if (angle <= Angle.Degrees270)
+			{
+				xOffset = width * angle.Cos;
+				yOffset = width * angle.Sin + height * angle.Cos;
+			}
+			else
+			{
+				yOffset = width * angle.Sin;
+			}
+
+			return Slot.TextOrigin + new Offset(xOffset, yOffset);
 		}
 	}
 }

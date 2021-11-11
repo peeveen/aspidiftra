@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Aspidiftra
 {
@@ -30,6 +31,18 @@ namespace Aspidiftra
 			foreach (var watermark in watermarks)
 				sourcePdf.ApplyWatermark(watermark);
 			sourcePdf.Save(outputPath);
+		}
+
+		public static IEnumerable<T> Mid<T>(this IEnumerable<T> collection, int amount)
+		{
+			var asList = collection.ToList();
+			var collectionSize = asList.Count;
+			if (amount > collectionSize)
+				throw new ArgumentException(
+					$"Cannot take the middle {amount} elements from a collection that only has {collectionSize} elements in it.");
+			var tooMany = collectionSize - amount;
+			var amountToRemoveEachSide = tooMany / 2;
+			return asList.GetRange(amountToRemoveEachSide, collectionSize - tooMany);
 		}
 	}
 }

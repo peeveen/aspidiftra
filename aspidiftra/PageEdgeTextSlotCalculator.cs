@@ -10,6 +10,7 @@ namespace Aspidiftra
 	{
 		private readonly Angle _angle;
 		private readonly double _availableTextStackSpace;
+		private readonly Fitting _fit;
 		private readonly Offset _logicalOffset;
 		private readonly double _maximumTextLength;
 		private readonly PageEdgePosition _pageEdgePosition;
@@ -22,11 +23,13 @@ namespace Aspidiftra
 		/// <param name="pageSize">Size of the page.</param>
 		/// <param name="pageEdgePosition">The page edge position of the watermark.</param>
 		/// <param name="angle">What angle the text will be at.</param>
+		/// <param name="fit">Current best-fit constraints.</param>
 		/// <param name="reverseDirection">True if the text should run in the opposite direction.</param>
 		internal PageEdgeTextSlotCalculator(PageSize pageSize, PageEdgePosition pageEdgePosition,
-			Angle angle, bool reverseDirection)
+			Angle angle, Fitting fit, bool reverseDirection)
 		{
 			_angle = angle;
+			_fit = fit;
 			_pageSize = pageSize;
 			_pageEdgePosition = pageEdgePosition;
 			_reverseDirection = reverseDirection;
@@ -84,11 +87,12 @@ namespace Aspidiftra
 			};
 
 			var slots = new List<TextSlot>();
-			var availableTextStackSpace = _availableTextStackSpace;
+			// If we're allowed to overflow, we can use any "partial" space that's left in the stack.
+			var availableTextStackSpace = _availableTextStackSpace + (_fit.HasOverflow() ? fontSize : 0.0);
 			while (availableTextStackSpace > 0.0)
 			{
 				slots.Add(new TextSlot(startPoint, _maximumTextLength, fontSize, _angle));
-				startPoint = startPoint + offset;
+				startPoint += offset;
 				availableTextStackSpace -= fontSize;
 			}
 

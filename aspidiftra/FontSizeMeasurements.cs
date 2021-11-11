@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 
 namespace Aspidiftra
 {
@@ -32,7 +31,7 @@ namespace Aspidiftra
 		}
 
 		/// <summary>
-		/// Size of font that these measurements are for.
+		///   Size of font that these measurements are for.
 		/// </summary>
 		internal float FontSize { get; }
 
@@ -47,12 +46,13 @@ namespace Aspidiftra
 		/// </summary>
 		/// <param name="text">String to measure.</param>
 		/// <returns>A <see cref="MeasuredString" /> object.</returns>
-		internal MeasuredString MeasureString(string text)
+		internal MeasuredString MeasureString(StringTokenCollection text)
 		{
-			if (!_stringMeasurements.TryGetValue(text, out var measuredString))
+			var str = text.ToString();
+			if (!_stringMeasurements.TryGetValue(str, out var measuredString))
 			{
-				var width = _font.MeasureString(text, FontSize);
-				measuredString = _stringMeasurements[text] = new MeasuredString(text, width);
+				var width = _font.MeasureString(str, FontSize);
+				measuredString = _stringMeasurements[str] = new MeasuredString(str, width, text.IsSplittable);
 			}
 
 			return measuredString;
@@ -63,85 +63,75 @@ namespace Aspidiftra
 		/// </summary>
 		/// <param name="text">Strings to measure.</param>
 		/// <returns>A collection of <see cref="MeasuredString" /> objects.</returns>
-		internal IEnumerable<MeasuredString> MeasureStrings(IEnumerable<string> text)
+		internal IEnumerable<MeasuredString> MeasureStrings(IEnumerable<StringTokenCollection> text)
 		{
 			return text.Select(MeasureString);
 		}
 
 		/// <summary>
-		///   Splits the given text tokens into lines that fit the given slots. If, after splitting
-		///   the text to fit the slots, there is leftover text, a <see cref="SplitTextForSlotsOverflowException" />
-		///   exception will be thrown.
+		///   Splits the given text tokens into lines that fit the given slots.
+		///   This may return lines that are longer than the given slots, or more lines than there
+		///   are slots, especially if there is a VERY long word in the text that cannot be split
+		///   up, or if there is too much text to fit into the available slots.
 		/// </summary>
 		/// <param name="tokens">String tokens to build into lines.</param>
 		/// <param name="slots">Slots that we want the text to fit.</param>
 		/// <returns>
-		///   List of strings that fit the given slots.
+		///   List of strings that best fit the given slots.
 		/// </returns>
-		internal IImmutableList<string> SplitTextForSlots(StringTokenCollection tokens, IEnumerable<TextSlot> slots)
+		internal IImmutableList<StringTokenCollection> SplitTextForSlots(StringTokenCollection tokens,
+			IEnumerable<TextSlot> slots)
 		{
-			var splitStrings = new List<string>();
+			var splitStrings = new List<StringTokenCollection>();
 			foreach (var slot in slots)
 			{
+				tokens = tokens.Normalize();
 				var availableSpace = slot.Width;
-				var stringBuilder = new StringBuilder();
-				var contentCount = 0;
+				var stringBuilder = new StringTokenCollection();
 
-				void AddLine(string line)
+				void AddLine(StringTokenCollection tokenCollection)
 				{
-					splitStrings.Add(line);
-					stringBuilder = new StringBuilder();
-					contentCount = 0;
+					splitStrings.Add(tokenCollection);
+					stringBuilder = new StringTokenCollection();
 				}
 
 				while (tokens.Any())
 				{
-					var lastString = stringBuilder.ToString();
+					var lastString = stringBuilder;
 					var (content, remainder) = tokens.GetNextContent();
 
-					if (content.Count()==1 && content.First().Type == StringToken.TokenType.LineBreak)
+					if (content.Count() == 1 && content.First().Type == StringToken.TokenType.LineBreak)
 					{
-						AddLine(stringBuilder.ToString());
+						AddLine(lastString);
+						tokens = remainder;
+						break;
 					}
-					else
-					{
-						// Content is guaranteed to only contain one line's worth of tokens.
-						var contentString = content.ToString();
-						stringBuilder.Append(contentString);
-						++contentCount;
+					// Content is guaranteed to only contain one line's worth of tokens.
+					stringBuilder += content;
 
-						var measuredString = MeasureString(stringBuilder.ToString());
-						if (measuredString.Length > availableSpace)
-						{
-							// The last bit of content we added to the current string has made
-							// it too long.
-							if (contentCount == 1)
-								// If it was the first bit of content we added, then oops!
-								// It's a single word that's too big for the slot. Chuck an
-								// exception. (it's guaranteed not to have been a whitespace
-								// token).
-								throw new CannotSplitTextException(contentString);
-							// Otherwise, use what we had before we added that word, put
-							// that word back into the word bag, and move onto the next slot.
-							AddLine(lastString);
-							break;
-						}
+					var measuredString = MeasureString(stringBuilder);
+					if (measuredString.Length > availableSpace)
+					{
+						// The last bit of content we added to the current string has made
+						// it too long.
+						// Use what we had before we added that word.
+						AddLine(lastString);
+						break;
 					}
 
 					if (!remainder.Any())
 						// We've run out of words, and we haven't exceeded the slot width.
 						// So use what we've built so far.
-						AddLine(stringBuilder.ToString());
+						AddLine(stringBuilder);
+
 					tokens = remainder;
 				}
 			}
 
-			var resultsList = splitStrings.ToImmutableList();
-
-			// If there are still words left over, chuck an exception.
-			if (tokens.Any())
-				throw new SplitTextForSlotsOverflowException(resultsList, tokens.Normalize());
-			return resultsList;
+			var resultsList = splitStrings.ToList();
+			if(tokens.Any())
+				resultsList.AddRange(tokens.GetLineCollections());
+			return resultsList.ToImmutableList();
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Aspidiftra.Geometry;
 
@@ -6,6 +7,26 @@ namespace Aspidiftra
 {
 	public class BannerTextWatermark : TextWatermark
 	{
+		/// <summary>
+		///   Angle for banners that sit along the diagonal between the bottom left corner and the top right corner of the page.
+		/// </summary>
+		public static IBannerAngle BottomLeftToTopRightAngle = new BottomLeftToTopRightBannerAngle();
+
+		/// <summary>
+		///   Angle for banners that sit along the diagonal between the top left corner and the bottom right corner of the page.
+		/// </summary>
+		public static IBannerAngle TopLeftToBottomRightAngle = new TopLeftToBottomRightBannerAngle();
+
+		/// <summary>
+		///   Angle for banners that sit along the diagonal between the top right corner and the bottom left corner of the page.
+		/// </summary>
+		public static IBannerAngle TopRightToBottomLeftAngle = new TopRightToBottomLeftBannerAngle();
+
+		/// <summary>
+		///   Angle for banners that sit along the diagonal between the bottom right corner and the top left corner of the page.
+		/// </summary>
+		public static IBannerAngle BottomRightToTopLeftAngle = new BottomRightToTopLeftBannerAngle();
+
 		private readonly IBannerAngle _angle;
 
 		/// <summary>
@@ -88,12 +109,18 @@ namespace Aspidiftra
 
 		protected override ITextSlotCalculator GetTextSlotCalculator(PageSize pageSize)
 		{
-			return new BannerTextSlotCalculator(pageSize, GetAngle(pageSize));
+			return new BannerTextSlotCalculator(pageSize, Fit, GetAngle(pageSize));
 		}
 
 		protected override Angle GetAngle(PageSize pageSize)
 		{
 			return _angle.GetAngle(pageSize);
+		}
+
+		protected override IEnumerable<MeasuredString> SelectOverflowStrings(IEnumerable<MeasuredString> strings,
+			int availableLines)
+		{
+			return strings.Mid(availableLines);
 		}
 	}
 }

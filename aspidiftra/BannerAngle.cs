@@ -20,7 +20,7 @@ namespace Aspidiftra
 	///   the south west corner of the page to the north
 	///   east corner.
 	/// </summary>
-	public sealed class BottomLeftToTopRightBannerAngle : IBannerAngle
+	internal sealed class BottomLeftToTopRightBannerAngle : IBannerAngle
 	{
 		public Angle GetAngle(PageSize pageSize)
 		{
@@ -33,7 +33,7 @@ namespace Aspidiftra
 	///   the north west corner of the page to the south
 	///   east corner.
 	/// </summary>
-	public sealed class BottomRightToTopLeftBannerAngle : IBannerAngle
+	internal sealed class BottomRightToTopLeftBannerAngle : IBannerAngle
 	{
 		public Angle GetAngle(PageSize pageSize)
 		{
@@ -46,7 +46,7 @@ namespace Aspidiftra
 	///   the south west corner of the page to the north
 	///   east corner.
 	/// </summary>
-	public sealed class TopLeftToBottomRightBannerAngle : IBannerAngle
+	internal sealed class TopLeftToBottomRightBannerAngle : IBannerAngle
 	{
 		public Angle GetAngle(PageSize pageSize)
 		{
@@ -59,7 +59,7 @@ namespace Aspidiftra
 	///   the north west corner of the page to the south
 	///   east corner.
 	/// </summary>
-	public sealed class TopRightToBottomLeftBannerAngle : IBannerAngle
+	internal sealed class TopRightToBottomLeftBannerAngle : IBannerAngle
 	{
 		public Angle GetAngle(PageSize pageSize)
 		{

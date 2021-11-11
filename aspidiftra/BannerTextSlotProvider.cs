@@ -38,10 +38,7 @@ namespace Aspidiftra
 			var availableSlots = slots.Count;
 			if (availableSlots < amount)
 				throw new InsufficientSlotsException(amount, availableSlots);
-			var topAndTail = (availableSlots - amount) / 2;
-			var topped = slots.RemoveRange(0, topAndTail);
-			var tailed = topped.RemoveRange(amount, topAndTail);
-			return tailed;
+			return slots.Mid(amount);
 		}
 	}
 }
