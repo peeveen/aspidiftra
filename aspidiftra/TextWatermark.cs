@@ -18,6 +18,11 @@ namespace Aspidiftra
 		// we could spend an eternity making insanely small adjustments.
 		private const float MinimumFontSizeDelta = 0.5f;
 
+		/// <summary>
+		/// How much we multiply the font size delta by, each time we apply it successfully.
+		/// </summary>
+		private const float FontSizeDeltaScalingFactor = 2.0f;
+
 		// We will never use a font size any smaller than this.
 		private const float MinimumFontSize = 1.0f;
 		private readonly Func<IImmutableSet<int>, IImmutableSet<int>> _pageSelector;
@@ -154,7 +159,7 @@ namespace Aspidiftra
 					positionedTextCollection = CalculatePositionedText(positionedTextCollection.FontSize + fontSizeDelta,
 						Fitting.None, fontSizeMeasurementsCache);
 					// Okay, so that still fits. Let's try a bigger jump next time.
-					fontSizeDelta *= 2.0f;
+					fontSizeDelta *= FontSizeDeltaScalingFactor;
 				}
 				catch (Exception)
 				{
@@ -181,6 +186,10 @@ namespace Aspidiftra
 		private PositionedTextCollection CalculatePositionedText(float fontSize, Fitting fit,
 			FontSizeMeasurementsCache fontSizeMeasurementsCache)
 		{
+			// Start with the minimum shrink delta.
+			var shrinkDelta = MinimumFontSizeDelta;
+			var lastNonFittingFontSize = 0.0f;
+
 			// Start by turning the watermark text into a set of tokens.
 			var textTokens = new StringTokenCollection(Text);
 			// Now build strings from those tokens.
@@ -196,7 +205,20 @@ namespace Aspidiftra
 				var fontSizeMeasurements = fontSizeMeasurementsCache.GetMeasurements(fontSize);
 				try
 				{
-					return CalculatePositionedText(fontSizeMeasurements, fit, textTokens, currentStrings);
+					var positionedText =
+						CalculatePositionedText(fontSizeMeasurements, fit, textTokens, currentStrings, shrinkDelta);
+					// If we now have fitting text, but our last shrink was greater than the
+					// minimum shrink, it's possible that we didn't have to shrink that much.
+					// Try again with a smaller shrink delta.
+					if (Math.Abs(shrinkDelta - MinimumFontSizeDelta) > float.Epsilon)
+					{
+						fontSize = lastNonFittingFontSize;
+						shrinkDelta = MinimumFontSizeDelta;
+					}
+					else
+					{
+						return positionedText;
+					}
 				}
 				catch (TextNeedsWrappedException textNeedsWrappedException)
 				{
@@ -204,7 +226,9 @@ namespace Aspidiftra
 				}
 				catch (FontSizeTooLargeException fontSizeTooLargeException)
 				{
+					lastNonFittingFontSize = fontSize;
 					fontSize = fontSizeTooLargeException.ReducedFontSize;
+					shrinkDelta *= FontSizeDeltaScalingFactor;
 				}
 				// If we get an InsufficientSpaceException, then we just have to let it reach the user.
 			}
@@ -217,6 +241,7 @@ namespace Aspidiftra
 		/// <param name="fit">Current fitting constraints.</param>
 		/// <param name="textTokens">Text tokens that make up the watermark text.</param>
 		/// <param name="currentStrings">The current list of string lines that make up the watermark text.</param>
+		/// <param name="shrinkDelta">If the font size is too big, this is how much to reduce it by.</param>
 		/// <returns>
 		///   The positioned text elements. Alternatively, a suitable exception will be thrown indicating
 		///   a possible modification to the font size or string lines that would make them fit better.
@@ -225,7 +250,7 @@ namespace Aspidiftra
 		///   <see cref="InsufficientSpaceException" />.
 		/// </returns>
 		private PositionedTextCollection CalculatePositionedText(FontSizeMeasurements fontSizeMeasurements,
-			Fitting fit, StringTokenCollection textTokens, IEnumerable<string> currentStrings)
+			Fitting fit, StringTokenCollection textTokens, IEnumerable<string> currentStrings, float shrinkDelta)
 		{
 			var fontSize = fontSizeMeasurements.FontSize;
 			// Measure the current strings.
@@ -252,7 +277,7 @@ namespace Aspidiftra
 					if (fit.HasWrap())
 						throw new TextNeedsWrappedException(CalculateWrappedStrings(fontSizeMeasurements, textTokens, slots));
 					if (fit.HasShrink())
-						throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, MinimumFontSizeDelta, fit));
+						throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, shrinkDelta, fit));
 					// Not enough room on the page, and we're not allowed to do anything about it!
 					throw new InsufficientSpaceException();
 				}
@@ -263,14 +288,14 @@ namespace Aspidiftra
 			catch (CannotSplitTextException cannotSplitTextException)
 			{
 				// A line of text cannot be split at a suitable point.
-				throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, MinimumFontSizeDelta, fit,
+				throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, shrinkDelta, fit,
 					cannotSplitTextException));
 			}
 			catch (InsufficientSlotsException insufficientSlotsException)
 			{
 				// There are not enough slots for the text.
 				// Wrapping lines will only make this worse.
-				throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, MinimumFontSizeDelta, fit,
+				throw new FontSizeTooLargeException(ShrinkFontSize(fontSize, shrinkDelta, fit,
 					insufficientSlotsException));
 			}
 			catch (CannotReduceFontSizeException cannotReduceFontSizeException)

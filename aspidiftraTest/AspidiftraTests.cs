@@ -85,7 +85,7 @@ namespace AspidiftraTest
 		public void TextSplitTest()
 		{
 			// ReSharper disable line StringLiteralTypo
-			var splitTestText = "   This is a     tést of\nthe sssssssssssssstring   splitting code\n\n  .";
+			var splitTestText = "   This is a     tÃ©st of\nthe sssssssssssssstring   splitting code\n\n  .";
 			var tokens = new StringTokenCollection(splitTestText).ToList();
 			Assert.AreEqual(20, tokens.Count);
 			var tenthToken = tokens[9];

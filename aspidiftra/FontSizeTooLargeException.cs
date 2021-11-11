@@ -8,11 +8,18 @@ namespace Aspidiftra
 	/// </summary>
 	internal class FontSizeTooLargeException : Exception
 	{
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="reducedSize">The suggested reduced font size.</param>
 		internal FontSizeTooLargeException(float reducedSize)
 		{
 			ReducedFontSize = reducedSize;
 		}
 
+		/// <summary>
+		/// The suggested reduced font size.
+		/// </summary>
 		public float ReducedFontSize { get; }
 	}
 }
