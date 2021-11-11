@@ -6,6 +6,11 @@ PDF text watermarking library, for use with Aspose PDF.
 * Targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
 * Arbitrary minimum version of Aspose PDF is 20.12. Standard Aspose licensing restrictions apply.
 * Currently provides page edge watermarks or banner watermarks.
+* All watermark constructors can take an optional `pageSelector` lambda argument, filtering the pages that the watermark appears on.
+* Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
+* Custom per-watermark opacity/transparency.
+* If you try to apply a watermark that cannot be fit onto the page, an `InsufficientSpaceException` will be thrown unless you use the `Fitting.Overflow` best-fit constraint.
+* Position of watermarks can be offset by a user-defined amount. This is applied after all fitting logic.
 
 # Example usages
 ```
@@ -80,9 +85,3 @@ doc.ApplyWatermark(rightPageEdgeWatermark);
 doc.Save("C:\\Watermarked.pdf");
 ```
 ![AspidiftraSample2](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/watermarkedDocument2.png)
-
-# More information
-* All watermark constructors can take an optional `pageSelector` lambda argument, filtering the pages that the watermark appears on.
-* Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
-* If you try to apply a watermark that cannot be fit onto the page, an `InsufficientSpaceException` will be thrown unless you use the `Fitting.Overflow` best-fit constraint.
-* Position of watermarks can be offset by a user-defined amount. This is applied after all fitting logic.
