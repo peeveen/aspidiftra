@@ -19,7 +19,7 @@ namespace Aspidiftra
 		public Font(string typeface, FontStyles styles, Size size)
 		{
 			// This will throw an exception if the font is not available.
-			_font = FontRepository.FindFont(typeface, styles, true);
+			_font = FontRepository.FindFont(typeface, (Aspose.Pdf.Text.FontStyles) styles, true);
 			_size = size;
 		}
 
