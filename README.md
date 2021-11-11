@@ -57,7 +57,7 @@ var rightPageEdgeWatermark = new PageEdgeTextWatermark(
 	PageEdgePosition.Right, // Where to place the watermark
 	Justification.Left, // Justification of text
 	Fitting.Wrap, // Permitted fitting constraints
-	new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Reverse the direction of the text
+	new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Margin
 
 var bannerWatermark = new BannerTextWatermark(
 	"This banner text also has lots and lots and lots and lots and lots " +
