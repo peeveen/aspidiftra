@@ -57,7 +57,7 @@ var rightPageEdgeWatermark = new PageEdgeTextWatermark(
 	PageEdgePosition.Right, // Where to place the watermark
 	Justification.Left, // Justification of text
 	Fitting.Wrap, // Permitted fitting constraints
-	new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Reverse the direction of the text
+	new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Margin
 
 var bannerWatermark = new BannerTextWatermark(
 	"This banner text also has lots and lots and lots and lots and lots " +
@@ -66,7 +66,7 @@ var bannerWatermark = new BannerTextWatermark(
 	Justification.Centre, // Justification
 	Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted fitting constraints.
 	new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
-	new BottomLeftToTopRightBannerAngle()); // Angle of banner
+	BannerTextWatermark.BottomLeftToTopRightAngle); // Angle of banner
 
 using var doc = new AspidiftraDocument("C:\\LoremIpsum.pdf");
 doc.ApplyWatermark(bannerWatermark);
@@ -77,6 +77,6 @@ doc.Save("C:\\Watermarked.pdf");
 ![AspidiftraSample2](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/watermarkedDocument2.png)
 
 # More information
-* All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
+* All watermark constructors can take an optional `pageSelector` lambda argument, filtering the pages that the watermark appears on.
 * Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
-* If you try to apply a watermark that cannot be fit onto the page, an InsufficientSpaceException will be thrown.
+* If you try to apply a watermark that cannot be fit onto the page, an `InsufficientSpaceException` will be thrown unless you use the `Fitting.Overflow` best-fit constraint.
