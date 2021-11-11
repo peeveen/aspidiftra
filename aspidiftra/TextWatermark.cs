@@ -31,6 +31,7 @@ namespace Aspidiftra
 		protected readonly Fitting Fit;
 		protected readonly Justification Justification;
 		protected readonly Size MarginSize;
+		protected readonly Offset Offset;
 		protected readonly string Text;
 
 		/// <summary>
@@ -47,6 +48,7 @@ namespace Aspidiftra
 		///   Size of margin, if you want to ensure the watermark isn't actually
 		///   touching the page edge.
 		/// </param>
+		/// <param name="offset">Arbitrary positional offset that can be applied.</param>
 		/// <param name="pageSelector">
 		///   Function that will select the pages that the watermark will appear on,
 		///   from a given set of page numbers. If no value is provided for this
@@ -56,13 +58,14 @@ namespace Aspidiftra
 		///   Should the text be made smaller/larger/wrapped to fit the area?
 		/// </param>
 		protected TextWatermark(string text, Appearance appearance, Justification justification,
-			Fitting fit, Size marginSize,
+			Fitting fit, Size marginSize, Offset offset,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
 		{
 			if (string.IsNullOrWhiteSpace(text))
 				throw new ArgumentException("Watermark text cannot be null, empty or all whitespace.", nameof(text));
 			Text = text;
 			Fit = fit;
+			Offset = offset;
 			Appearance = appearance;
 			MarginSize = marginSize;
 			Justification = justification;
@@ -141,13 +144,13 @@ namespace Aspidiftra
 		protected abstract Angle GetAngle(PageSize pageSize);
 
 		/// <summary>
-		/// If all lines of text cannot be fit on the screen, this function selects those that
-		/// will be shown. This will never be called if <see cref="Fitting.Overflow"/> has been
-		/// specified as a best-fit constraint.
+		///   If all lines of text cannot be fit on the screen, this function selects those that
+		///   will be shown. This will never be called if <see cref="Fitting.Overflow" /> has been
+		///   specified as a best-fit constraint.
 		/// </summary>
 		/// <param name="strings">All the lines that make up the watermark text.</param>
 		/// <param name="availableLines">The number of lines that can be displayed.</param>
-		/// <returns>The subset of <paramref name="strings"/> that should be shown.</returns>
+		/// <returns>The subset of <paramref name="strings" /> that should be shown.</returns>
 		protected abstract IEnumerable<MeasuredString> SelectOverflowStrings(IEnumerable<MeasuredString> strings,
 			int availableLines);
 
@@ -330,7 +333,7 @@ namespace Aspidiftra
 			}
 
 			// If we get here, then either all the strings fit the slots, or are allowed to overflow.
-			return GetPositionedTextCollection(allocatedTextSlots, fontSize);
+			return GetPositionedTextCollection(allocatedTextSlots, fontSize, Offset);
 		}
 
 		/// <summary>
@@ -360,16 +363,17 @@ namespace Aspidiftra
 		/// </summary>
 		/// <param name="allocatedSlots">The allocated text slots.</param>
 		/// <param name="fontSize">The current font size.</param>
+		/// <param name="offset">Arbitrary user-defined positional offset to apply.</param>
 		/// <returns>A positioned text collection.</returns>
 		private static PositionedTextCollection GetPositionedTextCollection(IEnumerable<AllocatedTextSlot> allocatedSlots,
-			float fontSize)
+			float fontSize, Offset offset)
 		{
 			var positionedText = allocatedSlots.Select(allocatedSlot =>
 			{
 				var slotText = allocatedSlot.Text;
 				var textOrigin = allocatedSlot.EffectiveTextOrigin;
 				var justifiedTextOrigin = textOrigin + allocatedSlot.JustificationOffset;
-				return new PositionedText(slotText.Text, justifiedTextOrigin);
+				return new PositionedText(slotText.Text, justifiedTextOrigin + offset);
 			});
 			return new PositionedTextCollection(positionedText, fontSize);
 		}

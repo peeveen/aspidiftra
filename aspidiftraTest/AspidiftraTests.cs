@@ -201,7 +201,7 @@ namespace AspidiftraTest
 				"This is a page edge watermark test that I hope\nwill execute successfully.",
 				watermarkAppearance,
 				PageEdgePosition.Bottom, Justification.Centre, Fitting.Wrap | Fitting.Shrink | Fitting.Grow,
-				new Size(0.03f, Sizing.RelativeToAverageSideLength), true);
+				new Size(0.03f, Sizing.RelativeToAverageSideLength), Offset.None, true);
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {pageEdgeWatermark}, outputPdfPath);
 		}
@@ -218,7 +218,7 @@ namespace AspidiftraTest
 				"This is a banner watermark test that I sincerely hope\nwill execute successfully, mainly because the maths involved was bloody difficult, and I haven't done any of that sort of thing since school.",
 				watermarkAppearance, Justification.Centre, Fitting.Wrap | Fitting.Shrink,
 				new Size(0.08f, Sizing.RelativeToAverageSideLength),
-				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)));
+				new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)), Offset.None);
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, new[] {bannerWatermark}, outputPdfPath);
 		}
@@ -240,7 +240,8 @@ namespace AspidiftraTest
 				PageEdgePosition.Top, // Where to place the watermark
 				Justification.Left, // Justification of text
 				Fitting.Wrap, // Permitted fitting constraints
-				new Size(0.025f, Sizing.RelativeToDiagonalSize)); // Margin
+				new Size(0.025f, Sizing.RelativeToDiagonalSize), // Margin
+				Offset.None);
 
 			var rightPageEdgeWatermark = new PageEdgeTextWatermark(
 				"This is a page edge watermark that has got a huge amount of text " +
@@ -250,7 +251,8 @@ namespace AspidiftraTest
 				PageEdgePosition.Right, // Where to place the watermark
 				Justification.Left, // Justification of text
 				Fitting.Wrap, // Permitted fitting constraints
-				new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Reverse the direction of the text
+				new Size(0.01f, Sizing.RelativeToDiagonalSize), // Margin
+				Offset.None); 
 
 			var bannerWatermark = new BannerTextWatermark(
 				"This banner text also has lots and lots and lots and lots and lots " +
@@ -259,7 +261,8 @@ namespace AspidiftraTest
 				Justification.Centre, // Justification
 				Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted fitting constraints.
 				new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
-				BannerTextWatermark.BottomLeftToTopRightAngle); // Angle of banner
+				BannerTextWatermark.BottomLeftToTopRightAngle, // Angle of banner
+				Offset.None);
 
 			using var doc = new AspidiftraDocument(testPdfPath);
 			doc.ApplyWatermark(bannerWatermark);
@@ -290,6 +293,7 @@ namespace AspidiftraTest
 					watermarkAppearance, Justification.Centre, Fitting.Shrink | Fitting.Grow,
 					new Size(0.08f, Sizing.RelativeToAverageSideLength),
 					new CustomBannerAngle(new Angle(angle, AngleUnits.Degrees)),
+					new Offset(50,50),
 					pages => requiredPageNumbers);
 				watermarks.Add(bannerWatermark);
 			}
@@ -317,7 +321,8 @@ namespace AspidiftraTest
 				Justification.Centre,
 				Fitting.Overflow,
 				new Size(0.04f, Sizing.RelativeToAverageSideLength),
-				BannerTextWatermark.BottomLeftToTopRightAngle);
+				BannerTextWatermark.BottomLeftToTopRightAngle,
+				Offset.None);
 			watermarks.Add(bannerWatermark);
 
 			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
@@ -343,7 +348,8 @@ namespace AspidiftraTest
 				PageEdgePosition.Top,
 				Justification.Right,
 				Fitting.Overflow,
-				new Size(0.04f, Sizing.RelativeToAverageSideLength));
+				new Size(0.04f, Sizing.RelativeToAverageSideLength),
+				Offset.None);
 			watermarks.Add(pageEdgeWatermark);
 			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
 		}
@@ -367,7 +373,8 @@ namespace AspidiftraTest
 				PageEdgePosition.Top,
 				Justification.Left,
 				Fitting.Overflow,
-				new Size(0.04f, Sizing.RelativeToAverageSideLength));
+				new Size(0.04f, Sizing.RelativeToAverageSideLength),
+				Offset.None);
 			watermarks.Add(pageEdgeWatermark);
 			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
 		}
@@ -391,7 +398,8 @@ namespace AspidiftraTest
 				Justification.Left,
 				Fitting.Overflow,
 				new Size(0.04f, Sizing.RelativeToAverageSideLength),
-				new CustomBannerAngle(new Angle(12.3, AngleUnits.Degrees)));
+				new CustomBannerAngle(new Angle(12.3, AngleUnits.Degrees)),
+				Offset.None);
 			watermarks.Add(pageEdgeWatermark);
 			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
 		}

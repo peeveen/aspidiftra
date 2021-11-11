@@ -56,15 +56,16 @@ namespace Aspidiftra
 		///   centered on the page. Be aware that using values from 90 to 270 will
 		///   result in "upside down" text.
 		/// </param>
+		/// <param name="offset">Arbitrary positional offset that can be applied.</param>
 		/// <param name="pageSelector">
 		///   Function that will select the pages that the watermark will appear on,
 		///   from a given set of page numbers. If no value is provided for this
 		///   parameter, <see cref="AspidiftraUtil.AllPagesSelector" /> will be used.
 		/// </param>
 		public BannerTextWatermark(string text, Appearance appearance, Justification justification,
-			Fitting fit, Size marginSize, IBannerAngle angle,
+			Fitting fit, Size marginSize, IBannerAngle angle, Offset offset,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
-			: base(text, appearance, justification, fit, marginSize, pageSelector)
+			: base(text, appearance, justification, fit, marginSize, offset, pageSelector)
 		{
 			_angle = angle;
 		}
@@ -95,15 +96,16 @@ namespace Aspidiftra
 		///   the page. Be aware that using values from 90 to 270 will result in
 		///   "upside down" text.
 		/// </param>
+		/// <param name="offset">Arbitrary positional offset that can be applied.</param>
 		/// <param name="pageSelector">
 		///   Function that will select the pages that the watermark will appear on,
 		///   from a given set of page numbers. If no value is provided for this
 		///   parameter, <see cref="AspidiftraUtil.AllPagesSelector" /> will be used.
 		/// </param>
 		public BannerTextWatermark(string text, Appearance appearance, Justification justification,
-			Fitting fit, Size marginSize, Angle angle,
+			Fitting fit, Size marginSize, Angle angle, Offset offset,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null)
-			: this(text, appearance, justification, fit, marginSize, new CustomBannerAngle(angle), pageSelector)
+			: this(text, appearance, justification, fit, marginSize, new CustomBannerAngle(angle), offset, pageSelector)
 		{
 		}
 

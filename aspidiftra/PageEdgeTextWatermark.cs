@@ -33,6 +33,7 @@ namespace Aspidiftra
 		///   Size of margin, if you want to ensure the watermark isn't actually
 		///   touching the page edge.
 		/// </param>
+		/// <param name="offset">Arbitrary positional offset that can be applied.</param>
 		/// <param name="pageSelector">
 		///   Function that will select the pages that the watermark will appear on,
 		///   from a given set of page numbers. If no value is provided for this
@@ -52,9 +53,10 @@ namespace Aspidiftra
 		///   edges from overlapping.
 		/// </param>
 		public PageEdgeTextWatermark(string text, Appearance appearance, PageEdgePosition position,
-			Justification justification, Fitting fit, Size marginSize, bool reverseDirection = false,
+			Justification justification, Fitting fit, Size marginSize,
+			Offset offset, bool reverseDirection = false,
 			Func<IImmutableSet<int>, IImmutableSet<int>>? pageSelector = null
-		) : base(text, appearance, justification, fit, marginSize, pageSelector)
+		) : base(text, appearance, justification, fit, marginSize, offset, pageSelector)
 		{
 			_reverseDirection = reverseDirection;
 			_pageEdgePosition = position;
@@ -86,7 +88,8 @@ namespace Aspidiftra
 			return _angle;
 		}
 
-		protected override IEnumerable<MeasuredString> SelectOverflowStrings(IEnumerable<MeasuredString> strings, int availableLines)
+		protected override IEnumerable<MeasuredString> SelectOverflowStrings(IEnumerable<MeasuredString> strings,
+			int availableLines)
 		{
 			return strings.Take(availableLines);
 		}
