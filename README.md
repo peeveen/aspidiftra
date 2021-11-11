@@ -66,7 +66,7 @@ var bannerWatermark = new BannerTextWatermark(
 	Justification.Centre, // Justification
 	Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted fitting constraints.
 	new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
-	new BottomLeftToTopRightBannerAngle()); // Angle of banner
+	BannerTextWatermark.BottomLeftToTopRightAngle); // Angle of banner
 
 using var doc = new AspidiftraDocument("C:\\LoremIpsum.pdf");
 doc.ApplyWatermark(bannerWatermark);
@@ -79,4 +79,4 @@ doc.Save("C:\\Watermarked.pdf");
 # More information
 * All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
 * Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
-* If you try to apply a watermark that cannot be fit onto the page, an InsufficientSpaceException will be thrown.
+* If you try to apply a watermark that cannot be fit onto the page, an InsufficientSpaceException will be thrown unless you use the Fitting.Overflow best-fit constraint.
