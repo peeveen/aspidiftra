@@ -21,6 +21,7 @@ var pageEdgeWatermark = new PageEdgeTextWatermark(
 	Justification.Centre, // Justification of text
 	Fitting.Wrap | Fitting.Shrink, // Permitted best-fitting constraints
 	new Size(0.03f, Sizing.RelativeToAverageSideLength), // Margin
+	Offset.None, // User-defined positional offset
 	true); // Reverse the direction of the text
 
 var bannerWatermark = new BannerTextWatermark(
@@ -29,7 +30,8 @@ var bannerWatermark = new BannerTextWatermark(
 	Justification.Centre, // Justification of the text
 	Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted best-fitting constraints
 	new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
-	new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees))); // Angle of banner
+	new CustomBannerAngle(new Angle(123.4, AngleUnits.Degrees)), // Angle of banner
+	Offset.None); // User-defined positional offset
 
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
@@ -47,7 +49,8 @@ var topPageEdgeWatermark = new PageEdgeTextWatermark(
 	PageEdgePosition.Top, // Where to place the watermark
 	Justification.Left, // Justification of text
 	Fitting.Wrap, // Permitted fitting constraints
-	new Size(0.025f, Sizing.RelativeToDiagonalSize)); // Margin
+	new Size(0.025f, Sizing.RelativeToDiagonalSize), // Margin
+	Offset.None); // User-defined positional offset.
 
 var rightPageEdgeWatermark = new PageEdgeTextWatermark(
 	"This is a page edge watermark that has got a huge amount of text " +
@@ -57,7 +60,8 @@ var rightPageEdgeWatermark = new PageEdgeTextWatermark(
 	PageEdgePosition.Right, // Where to place the watermark
 	Justification.Left, // Justification of text
 	Fitting.Wrap, // Permitted fitting constraints
-	new Size(0.01f, Sizing.RelativeToDiagonalSize)); // Margin
+	new Size(0.01f, Sizing.RelativeToDiagonalSize), // Margin
+	Offset.None); // User-defined positional offset.
 
 var bannerWatermark = new BannerTextWatermark(
 	"This banner text also has lots and lots and lots and lots and lots " +
@@ -66,7 +70,8 @@ var bannerWatermark = new BannerTextWatermark(
 	Justification.Centre, // Justification
 	Fitting.Wrap | Fitting.Shrink | Fitting.Grow, // Permitted fitting constraints.
 	new Size(0.08f, Sizing.RelativeToAverageSideLength), // Margin
-	BannerTextWatermark.BottomLeftToTopRightAngle); // Angle of banner
+	BannerTextWatermark.BottomLeftToTopRightAngle, // Angle of banner
+	Offset.None); // User-defined positional offset.
 
 using var doc = new AspidiftraDocument("C:\\LoremIpsum.pdf");
 doc.ApplyWatermark(bannerWatermark);
@@ -80,3 +85,4 @@ doc.Save("C:\\Watermarked.pdf");
 * All watermark constructors can take an optional `pageSelector` lambda argument, filtering the pages that the watermark appears on.
 * Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
 * If you try to apply a watermark that cannot be fit onto the page, an `InsufficientSpaceException` will be thrown unless you use the `Fitting.Overflow` best-fit constraint.
+* Position of watermarks can be offset by a user-defined amount. This is applied after all fitting logic.
