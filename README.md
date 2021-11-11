@@ -77,6 +77,6 @@ doc.Save("C:\\Watermarked.pdf");
 ![AspidiftraSample2](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/watermarkedDocument2.png)
 
 # More information
-* All watermark constructors can take an optional "page selector" lambda argument, filtering the pages that the watermark appears on.
+* All watermark constructors can take an optional `pageSelector` lambda argument, filtering the pages that the watermark appears on.
 * Font sizes and margin sizes can be specified as absolute or relative to various page dimensions.
-* If you try to apply a watermark that cannot be fit onto the page, an InsufficientSpaceException will be thrown unless you use the Fitting.Overflow best-fit constraint.
+* If you try to apply a watermark that cannot be fit onto the page, an `InsufficientSpaceException` will be thrown unless you use the `Fitting.Overflow` best-fit constraint.
