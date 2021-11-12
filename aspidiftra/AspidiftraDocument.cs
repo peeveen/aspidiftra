@@ -11,6 +11,11 @@ namespace Aspidiftra
 	public class AspidiftraDocument : IDisposable
 	{
 		/// <summary>
+		///   True if the inner Aspose document should be disposed after use.
+		/// </summary>
+		private readonly bool _dispose;
+
+		/// <summary>
 		///   Aspose.Pdf object through which we apply watermarks.
 		/// </summary>
 		private readonly PdfFileStamp _fileStamp;
@@ -28,13 +33,9 @@ namespace Aspidiftra
 		/// <summary>
 		///   Constructor.
 		/// </summary>
-		/// <param name="path">Path to the source PDF.</param>
-		/// <param name="password">Any password required.</param>
-		public AspidiftraDocument(string path, string? password = null)
+		/// <param name="document">Aspose PDF document.</param>
+		public AspidiftraDocument(Document document)
 		{
-			if (string.IsNullOrWhiteSpace(path))
-				throw new ArgumentException("Input path cannot be null, empty, or all whitespace.", nameof(path));
-			var document = new Document(path, password);
 			_pageNumbers = document.Pages.Select(page => page.Number).ToImmutableHashSet();
 			// Gather up all the pages into a dictionary, keyed on normalized page size.
 			// "Normalized" means that, even if the page is rotated, or has a negative coordinate space,
@@ -55,10 +56,36 @@ namespace Aspidiftra
 			_fileStamp = new PdfFileStamp(document);
 		}
 
+		/// <summary>
+		///   Constructor.
+		/// </summary>
+		/// <param name="path">Path to the source PDF.</param>
+		/// <param name="password">Any password required.</param>
+		public AspidiftraDocument(string path, string? password = null)
+			: this(new Document(ValidatePathArgument(path, nameof(path)), password))
+		{
+			_dispose = true;
+		}
+
 		public void Dispose()
 		{
 			// Disposing the file stamp also disposes the wrapped Document.
-			_fileStamp.Dispose();
+			if (_dispose)
+				_fileStamp.Dispose();
+		}
+
+		/// <summary>
+		///   Validates a path argument, which cannot be empty or null.
+		/// </summary>
+		/// <param name="path">Argument to validate.</param>
+		/// <param name="pathArgumentName">Name of argument.</param>
+		/// <returns>The argument if it is okay. Otherwise, throws an <see cref="ArgumentException" />.</returns>
+		private static string ValidatePathArgument(string path, string pathArgumentName)
+		{
+			if (string.IsNullOrWhiteSpace(path))
+				throw new ArgumentException($"'{pathArgumentName}' cannot be null, empty, or all whitespace.",
+					pathArgumentName);
+			return path;
 		}
 
 		/// <summary>

@@ -6,8 +6,11 @@ using System.Linq;
 using Aspidiftra;
 using Aspidiftra.Geometry;
 using Aspose.Pdf;
+using Aspose.Pdf.Annotations;
+using Aspose.Pdf.Facades;
 using NUnit.Framework;
 using Color = System.Drawing.Color;
+using Justification = Aspidiftra.Justification;
 using PageSize = Aspidiftra.PageSize;
 using Point = Aspidiftra.Geometry.Point;
 using Rectangle = Aspidiftra.Geometry.Rectangle;
@@ -40,6 +43,7 @@ namespace AspidiftraTest
 		private const string LoremIpsum = "09_LoremIpsum_595_841.pdf";
 		private const string Square720Pages = "10_Square720Pages_600_600.pdf";
 		private const string DifferentPageSizes = "11_DifferentPageSizes.pdf";
+		private const string Bookmarks = "12_Bookmarks.pdf";
 
 		private const string SeenAndNotSeenLyrics = "He would see faces in movies, on T.V., in magazines, and in books,\n" +
 		                                            "He thought that some of these faces might be right for him,\n" +
@@ -410,6 +414,81 @@ namespace AspidiftraTest
 		{
 			var testPdfPath = Path.Join(TestPdfsFolder, Square720Pages);
 			new AspidiftraDocument(testPdfPath);
+		}
+
+		[Test]
+		[Order(2)]
+		public void BookmarkTest()
+		{
+			var paths = new []
+			{
+				Path.Join(TestPdfsFolder, LoremIpsum),
+				Path.Join(TestPdfsFolder, FivePages),
+				Path.Join(TestPdfsFolder, Bookmarks),
+			};
+			var outputPath = Path.Join(OutputPdfsFolder, "BookmarkConcatenationTest.pdf");
+			var pdfPaths = paths.ToImmutableList();
+			if (!pdfPaths.Any())
+				throw new ArgumentException("At least one PDF must be provided.", nameof(paths));
+			var concatenatePdfPaths = pdfPaths.TakeLast(pdfPaths.Count - 1);
+			// Open first document
+			var pdfsToDispose = new List<Document>();
+			var pageOffset = 0;
+			var bookmarks = new List<Bookmarks>();
+			using (var originalPdf = new Document(pdfPaths.First()))
+			{
+				pageOffset += originalPdf.Pages.Count;
+
+				// Stick the others on, in order.
+				foreach (var nextPdfPath in concatenatePdfPaths)
+				{
+					Bookmarks? nextPdfBookmarks;
+					// Create PdfBookmarkEditor
+					using (var bookmarkEditor = new PdfBookmarkEditor())
+					{
+						// Open PDF file
+						bookmarkEditor.BindPdf(nextPdfPath);
+						// Extract bookmarks
+						nextPdfBookmarks = bookmarkEditor.ExtractBookmarks(true);
+					}
+					var nextPdf = new Document(nextPdfPath);
+					pdfsToDispose.Add(nextPdf);
+					originalPdf.Pages.Add(nextPdf.Pages);
+					if (nextPdfBookmarks != null)
+					{
+						foreach (var bookmark in nextPdfBookmarks)
+						{
+							bookmark.PageNumber += pageOffset;
+							foreach (var subBookmark in bookmark.ChildItems)
+								subBookmark.PageNumber += pageOffset;
+						}
+						bookmarks.Add(nextPdfBookmarks);
+					}
+					pageOffset += nextPdf.Pages.Count;
+				}
+
+				var infoStrings = new Dictionary<string, string>();
+				infoStrings["Author"] = "Bobcat Goldthwaite";
+				infoStrings["Subject"] = "Nothing much";
+				foreach (var (key, value) in infoStrings)
+					originalPdf.Info[key] = value;
+
+				originalPdf.Save(outputPath);
+			}
+
+			foreach (var pdf in pdfsToDispose)
+				pdf.Dispose();
+
+			using (var bookmarkEditor = new PdfBookmarkEditor())
+			{
+				// Bind PDF document
+				bookmarkEditor.BindPdf(outputPath);
+				// Create bookmarks
+				foreach (var subBookmark in bookmarks.SelectMany(b => b))
+					bookmarkEditor.CreateBookmarks(subBookmark);
+				// Save updated document
+				bookmarkEditor.Save(outputPath);
+			}
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Aspose.Pdf;
 
 namespace Aspidiftra
 {
@@ -31,6 +32,23 @@ namespace Aspidiftra
 			foreach (var watermark in watermarks)
 				sourcePdf.ApplyWatermark(watermark);
 			sourcePdf.Save(outputPath);
+		}
+
+		/// <summary>
+		///   Watermarks the given source PDF.
+		/// </summary>
+		/// <param name="document">Document to watermark.</param>
+		/// <param name="watermarks">The watermarks to apply.</param>
+		public static void WatermarkPdf(Document document, IEnumerable<IWatermark> watermarks)
+		{
+			if (document == null)
+				throw new ArgumentNullException(nameof(document));
+			if (watermarks == null)
+				throw new ArgumentNullException(nameof(watermarks));
+
+			using var sourcePdf = new AspidiftraDocument(document);
+			foreach (var watermark in watermarks)
+				sourcePdf.ApplyWatermark(watermark);
 		}
 
 		/// <summary>
