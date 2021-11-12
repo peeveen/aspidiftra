@@ -80,6 +80,8 @@ namespace AspidiftraTest
 				var license = new License();
 				license.SetLicense(asposeLicensePath);
 			}
+			if (!Directory.Exists(OutputPdfsFolder))
+				Directory.CreateDirectory(OutputPdfsFolder);
 		}
 
 		/// <summary>
