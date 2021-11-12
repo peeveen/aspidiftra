@@ -74,6 +74,8 @@ namespace AspidiftraTest
 		[SetUp]
 		public void Setup()
 		{
+			if (!Directory.Exists(AsposeLicenseFolder))
+				Directory.CreateDirectory(AsposeLicenseFolder);
 			var asposeLicensePath = Path.Join(AsposeLicenseFolder, AsposeLicenseFilename);
 			if (File.Exists(asposeLicensePath))
 			{
