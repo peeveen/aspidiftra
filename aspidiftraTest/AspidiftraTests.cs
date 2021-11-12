@@ -6,11 +6,9 @@ using System.Linq;
 using Aspidiftra;
 using Aspidiftra.Geometry;
 using Aspose.Pdf;
-using Aspose.Pdf.Annotations;
 using Aspose.Pdf.Facades;
 using NUnit.Framework;
 using Color = System.Drawing.Color;
-using Justification = Aspidiftra.Justification;
 using PageSize = Aspidiftra.PageSize;
 using Point = Aspidiftra.Geometry.Point;
 using Rectangle = Aspidiftra.Geometry.Rectangle;
@@ -256,7 +254,7 @@ namespace AspidiftraTest
 				Justification.Left, // Justification of text
 				Fitting.Wrap, // Permitted fitting constraints
 				new Size(0.01f, Sizing.RelativeToDiagonalSize), // Margin
-				Offset.None); 
+				Offset.None);
 
 			var bannerWatermark = new BannerTextWatermark(
 				"This banner text also has lots and lots and lots and lots and lots " +
@@ -297,7 +295,7 @@ namespace AspidiftraTest
 					watermarkAppearance, Justification.Centre, Fitting.Shrink | Fitting.Grow,
 					new Size(0.08f, Sizing.RelativeToAverageSideLength),
 					new CustomBannerAngle(new Angle(angle, AngleUnits.Degrees)),
-					new Offset(50,50),
+					new Offset(50, 50),
 					pages => requiredPageNumbers);
 				watermarks.Add(bannerWatermark);
 			}
@@ -397,7 +395,7 @@ namespace AspidiftraTest
 			var watermarkAppearance = new Appearance(Color.Purple, 0.6f, watermarkFont);
 			var watermarks = new List<IWatermark>();
 
-			Document doc = new Document(testPdfPath);
+			var doc = new Document(testPdfPath);
 			var pageEdgeWatermark = new BannerTextWatermark(SeenAndNotSeenLyrics,
 				watermarkAppearance,
 				Justification.Left,
@@ -422,11 +420,11 @@ namespace AspidiftraTest
 		[Order(2)]
 		public void BookmarkTest()
 		{
-			var paths = new []
+			var paths = new[]
 			{
 				Path.Join(TestPdfsFolder, LoremIpsum),
 				Path.Join(TestPdfsFolder, FivePages),
-				Path.Join(TestPdfsFolder, Bookmarks),
+				Path.Join(TestPdfsFolder, Bookmarks)
 			};
 			var outputPath = Path.Join(OutputPdfsFolder, "BookmarkConcatenationTest.pdf");
 			var pdfPaths = paths.ToImmutableList();
@@ -453,6 +451,7 @@ namespace AspidiftraTest
 						// Extract bookmarks
 						nextPdfBookmarks = bookmarkEditor.ExtractBookmarks(true);
 					}
+
 					var nextPdf = new Document(nextPdfPath);
 					pdfsToDispose.Add(nextPdf);
 					originalPdf.Pages.Add(nextPdf.Pages);
@@ -464,8 +463,10 @@ namespace AspidiftraTest
 							foreach (var subBookmark in bookmark.ChildItems)
 								subBookmark.PageNumber += pageOffset;
 						}
+
 						bookmarks.Add(nextPdfBookmarks);
 					}
+
 					pageOffset += nextPdf.Pages.Count;
 				}
 
