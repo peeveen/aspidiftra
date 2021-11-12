@@ -397,6 +397,7 @@ namespace AspidiftraTest
 			var watermarkAppearance = new Appearance(Color.Purple, 0.6f, watermarkFont);
 			var watermarks = new List<IWatermark>();
 
+			Document doc = new Document(testPdfPath);
 			var pageEdgeWatermark = new BannerTextWatermark(SeenAndNotSeenLyrics,
 				watermarkAppearance,
 				Justification.Left,
@@ -405,7 +406,8 @@ namespace AspidiftraTest
 				new CustomBannerAngle(new Angle(12.3, AngleUnits.Degrees)),
 				Offset.None);
 			watermarks.Add(pageEdgeWatermark);
-			AspidiftraUtil.WatermarkPdf(testPdfPath, watermarks, outputPdfPath);
+			AspidiftraUtil.WatermarkPdf(doc, watermarks);
+			doc.Save(outputPdfPath);
 		}
 
 		[Test]
