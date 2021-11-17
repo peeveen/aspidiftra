@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<LangVersion>8.0</LangVersion>
 		<IsPackable>false</IsPackable>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\aspidiftra\Aspidiftra.csproj" />
+    <ProjectReference Include="..\aspidiftra\aspidiftra.csproj" />
   </ItemGroup>
 
 </Project>

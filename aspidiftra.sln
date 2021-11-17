@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aspidiftra", "aspidiftra\Aspidiftra.csproj", "{F43BB297-FB8A-49C8-81E8-A30FC37988A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aspidiftra", "aspidiftra\aspidiftra.csproj", "{F43BB297-FB8A-49C8-81E8-A30FC37988A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspidiftraTest", "aspidiftraTest\AspidiftraTest.csproj", "{B32E39BF-25D1-4FF3-9129-9E1DB0F442D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspidiftraTest", "aspidiftraTest\aspidiftraTest.csproj", "{B32E39BF-25D1-4FF3-9129-9E1DB0F442D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

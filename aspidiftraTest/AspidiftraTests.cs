@@ -22,9 +22,6 @@ namespace AspidiftraTest
 		/// </summary>
 		internal const double GeometricTolerance = 0.0000001;
 
-		private const string TestPdfsFolder = "..\\..\\..\\TestPDFs";
-		private const string OutputPdfsFolder = "..\\..\\..\\OutputPDFs";
-		private const string AsposeLicenseFolder = "..\\..\\..\\AsposeLicense";
 		private const string AsposeLicenseFilename = "Aspose.Total.lic.xml";
 
 		private const string Simple = "01_Simple_1191_842.pdf";
@@ -68,6 +65,11 @@ namespace AspidiftraTest
 		                                            "Some may have gotten half way there, and then changed their minds,\n" +
 		                                            "He wonders if he too might have made a similar mistake.";
 
+		private static readonly string RelativePathToTestFolder = Path.Join("..", "..", "..");
+		private static readonly string TestPdfsFolder = Path.Join(RelativePathToTestFolder, "TestPDFs");
+		private static readonly string OutputPdfsFolder = Path.Join(RelativePathToTestFolder, "OutputPDFs");
+		private static readonly string AsposeLicenseFolder = Path.Join(RelativePathToTestFolder, "AsposeLicense");
+
 		/// <summary>
 		///   Applies the Aspose license, if available.
 		/// </summary>
@@ -82,6 +84,7 @@ namespace AspidiftraTest
 				var license = new License();
 				license.SetLicense(asposeLicensePath);
 			}
+
 			if (!Directory.Exists(OutputPdfsFolder))
 				Directory.CreateDirectory(OutputPdfsFolder);
 		}
@@ -410,92 +413,6 @@ namespace AspidiftraTest
 			watermarks.Add(pageEdgeWatermark);
 			AspidiftraUtil.WatermarkPdf(doc, watermarks);
 			doc.Save(outputPdfPath);
-		}
-
-		[Test]
-		[Order(2)]
-		public void GetDocumentSize()
-		{
-			var testPdfPath = Path.Join(TestPdfsFolder, Square720Pages);
-			new AspidiftraDocument(testPdfPath);
-		}
-
-		[Test]
-		[Order(2)]
-		public void BookmarkTest()
-		{
-			var paths = new[]
-			{
-				Path.Join(TestPdfsFolder, LoremIpsum),
-				Path.Join(TestPdfsFolder, FivePages),
-				Path.Join(TestPdfsFolder, Bookmarks)
-			};
-			var outputPath = Path.Join(OutputPdfsFolder, "BookmarkConcatenationTest.pdf");
-			var pdfPaths = paths.ToImmutableList();
-			if (!pdfPaths.Any())
-				throw new ArgumentException("At least one PDF must be provided.", nameof(paths));
-			var concatenatePdfPaths = pdfPaths.TakeLast(pdfPaths.Count - 1);
-			// Open first document
-			var pdfsToDispose = new List<Document>();
-			var pageOffset = 0;
-			var bookmarks = new List<Bookmarks>();
-			using (var originalPdf = new Document(pdfPaths.First()))
-			{
-				pageOffset += originalPdf.Pages.Count;
-
-				// Stick the others on, in order.
-				foreach (var nextPdfPath in concatenatePdfPaths)
-				{
-					Bookmarks? nextPdfBookmarks;
-					// Create PdfBookmarkEditor
-					using (var bookmarkEditor = new PdfBookmarkEditor())
-					{
-						// Open PDF file
-						bookmarkEditor.BindPdf(nextPdfPath);
-						// Extract bookmarks
-						nextPdfBookmarks = bookmarkEditor.ExtractBookmarks(true);
-					}
-
-					var nextPdf = new Document(nextPdfPath);
-					pdfsToDispose.Add(nextPdf);
-					originalPdf.Pages.Add(nextPdf.Pages);
-					if (nextPdfBookmarks != null)
-					{
-						foreach (var bookmark in nextPdfBookmarks)
-						{
-							bookmark.PageNumber += pageOffset;
-							foreach (var subBookmark in bookmark.ChildItems)
-								subBookmark.PageNumber += pageOffset;
-						}
-
-						bookmarks.Add(nextPdfBookmarks);
-					}
-
-					pageOffset += nextPdf.Pages.Count;
-				}
-
-				var infoStrings = new Dictionary<string, string>();
-				infoStrings["Author"] = "Bobcat Goldthwaite";
-				infoStrings["Subject"] = "Nothing much";
-				foreach (var (key, value) in infoStrings)
-					originalPdf.Info[key] = value;
-
-				originalPdf.Save(outputPath);
-			}
-
-			foreach (var pdf in pdfsToDispose)
-				pdf.Dispose();
-
-			using (var bookmarkEditor = new PdfBookmarkEditor())
-			{
-				// Bind PDF document
-				bookmarkEditor.BindPdf(outputPath);
-				// Create bookmarks
-				foreach (var subBookmark in bookmarks.SelectMany(b => b))
-					bookmarkEditor.CreateBookmarks(subBookmark);
-				// Save updated document
-				bookmarkEditor.Save(outputPath);
-			}
 		}
 	}
 }
