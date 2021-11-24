@@ -1,7 +1,7 @@
 # aspidiftra
 PDF text watermarking library, for use with Aspose PDF.
 
-![Uncle](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/uncle.jpg)
+![Uncle](/media/uncle.jpg)
 
 * Targets .NET Standard 2.0, .NET Framework 4.8, .NET Core 3.1.
 * Arbitrary minimum version of Aspose PDF is 20.12. Standard Aspose licensing restrictions apply.
@@ -41,7 +41,7 @@ var bannerWatermark = new BannerTextWatermark(
 var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
 ```
-![AspidiftraSample1](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/watermarkedDocument1.png)
+![AspidiftraSample1](/media/watermarkedDocument1.png)
 ```
 var impactFont = new Font("Impact", FontStyles.Bold, new Size(.045f, Sizing.RelativeToShorterSide));
 var courierFont = new Font("Courier New", FontStyles.Regular, new Size(.025f, Sizing.RelativeToWidth));
@@ -84,4 +84,4 @@ doc.ApplyWatermark(topPageEdgeWatermark);
 doc.ApplyWatermark(rightPageEdgeWatermark);
 doc.Save("C:\\Watermarked.pdf");
 ```
-![AspidiftraSample2](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/watermarkedDocument2.png)
+![AspidiftraSample2](/media/watermarkedDocument2.png)
