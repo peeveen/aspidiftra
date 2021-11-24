@@ -3,7 +3,7 @@ PDF text watermarking library, for use with Aspose PDF.
 
 ![Uncle](https://raw.githubusercontent.com/peeveen/aspidiftra/master/media/uncle.jpg)
 
-* Targets .NET Standard 2.0, compatible with most .NET Framework or .NET Core apps.
+* Targets .NET Standard 2.0, .NET Framework 4.8, .NET Core 3.1.
 * Arbitrary minimum version of Aspose PDF is 20.12. Standard Aspose licensing restrictions apply.
 * Currently provides page edge watermarks or banner watermarks.
 * All watermark constructors can take an optional `pageSelector` lambda argument, filtering the pages that the watermark appears on.
