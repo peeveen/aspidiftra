@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>netstandard2.0;net48;netcoreapp3.1</TargetFrameworks>
 		<AssemblyName>Aspidiftra</AssemblyName>
 		<RootNamespace>Aspidiftra</RootNamespace>
 		<LangVersion>8.0</LangVersion>
