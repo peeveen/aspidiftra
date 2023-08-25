@@ -13,7 +13,7 @@ PDF text watermarking library, for use with Aspose PDF.
 * Position of watermarks can be offset by a user-defined amount. This is applied after all fitting logic.
 
 # Examples
-```
+```csharp
 var fontSize = new Size(.025f, Sizing.RelativeToDiagonalSize);
 var watermarkFont = new Font("Helvetica", FontStyles.Italic, fontSize);
 var watermarkRedAppearance = new Appearance(Color.Red, 1.0f, watermarkFont);
