@@ -42,7 +42,7 @@ var watermarks = new IWatermark[] {pageEdgeWatermark, bannerWatermark};
 AspidiftraUtil.WatermarkPdf("C:\\LoremIpsum.pdf", watermarks, "C:\\Watermarked.pdf");
 ```
 ![AspidiftraSample1](/media/watermarkedDocument1.png)
-```
+```csharp
 var impactFont = new Font("Impact", FontStyles.Bold, new Size(.045f, Sizing.RelativeToShorterSide));
 var courierFont = new Font("Courier New", FontStyles.Regular, new Size(.025f, Sizing.RelativeToWidth));
 var blueVioletImpact = new Appearance(Color.BlueViolet, 0.75f, impactFont); // 75% opacity
